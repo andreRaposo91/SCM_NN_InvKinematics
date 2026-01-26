@@ -1,0 +1,9 @@
+#timestamp: 2024-04-29T155504; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_square;pause_time: 0.75;elapsed_time: 27.215
+#timestamp: 2024-04-29T155546; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_square;pause_time: 1;elapsed_time: 35.538
+timestamp: 2024-04-29T155758; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_square;pause_time: 0.75;elapsed_time: 26.999
+timestamp: 2024-04-29T155918; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn3_square;pause_time: 0.75;elapsed_time: 27.081
+timestamp: 2024-04-29T160020; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn6_square;pause_time: 0.75;elapsed_time: 27.099
+timestamp: 2024-04-29T160126; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn_square;pause_time: 0.75;elapsed_time: 27.281
+timestamp: 2024-05-03T151615; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn3-pcc_square;pause_time: 0.75;elapsed_time: 27.089
+timestamp: 2024-05-07T155810; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn-pcc_square;pause_time: 0.75;elapsed_time: 26.997
+timestamp: 2024-06-19T110219; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn3-pcc_square;pause_time: 0.75;elapsed_time: 27.343

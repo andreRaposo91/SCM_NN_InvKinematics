@@ -1,0 +1,11 @@
+#timestamp: 2024-04-29T142842; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_pcc_square;pause_time: 0.22;elapsed_time: 10.250
+timestamp: 2024-04-29T142945; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_pcc_square;pause_time: 0.22;elapsed_time: 10.215
+timestamp: 2024-04-29T143324; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn3_square;pause_time: 0.22;elapsed_time: 10.165
+timestamp: 2024-04-29T143442; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn6_square;pause_time: 0.22;elapsed_time: 10.200
+timestamp: 2024-04-29T143535; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_rnn_square;pause_time: 0.22;elapsed_time: 10.170
+timestamp: 2024-05-03T151705; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn3-pcc_square;pause_time: 0.22;elapsed_time: 10.167
+timestamp: 2024-05-03T152149; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn6-pcc_square;pause_time: 0.22;elapsed_time: 10.145
+timestamp: 2024-05-07T155929; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_rnn-pcc_square;pause_time: 0.23;elapsed_time: 10.135
+#timestamp: 2024-06-19T110314; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn3-pcc_square;pause_time: 0.23;elapsed_time: 10.132
+#timestamp: 2024-06-19T110355; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_fnn6-pcc_square;pause_time: 0.23;elapsed_time: 10.177
+#timestamp: 2024-06-19T110506; traj command: generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4)); inv_kin_model: inv_rnn-pcc_square;pause_time: 0.23;elapsed_time: 10.163

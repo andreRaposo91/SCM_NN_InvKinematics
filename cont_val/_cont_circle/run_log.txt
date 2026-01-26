@@ -1,0 +1,13 @@
+timestamp: 2024-04-23T132907; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.16;elapsed_time: 7.270
+timestamp: 2024-04-23T144435; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.2;elapsed_time: 8.903
+timestamp: 2024-04-23T144553; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.15;elapsed_time: 7.059
+timestamp: 2024-04-23T145005; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.16;elapsed_time: 7.221
+timestamp: 2024-04-23T145030; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.16;elapsed_time: 7.240
+timestamp: 2024-04-23T145114; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_fnn3_circle;pause_time: 0.16;elapsed_time: 7.210
+timestamp: 2024-04-23T145146; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_fnn3_circle;pause_time: 0.16;elapsed_time: 7.388
+timestamp: 2024-04-23T145307; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_fnn6_circle;pause_time: 0.16;elapsed_time: 7.320
+timestamp: 2024-04-23T145341; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_fnn6_circle;pause_time: 0.16;elapsed_time: 7.210
+timestamp: 2024-04-23T145547; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_rnn_circle;pause_time: 0.16;elapsed_time: 7.122
+timestamp: 2024-04-23T145628; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_rnn_circle;pause_time: 0.16;elapsed_time: 7.253
+timestamp: 2024-04-23T153618; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.16;elapsed_time: 7.039
+timestamp: 2024-04-23T160648; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6)); inv_kin_model: inv_pcc_circle;pause_time: 0.16;elapsed_time: 6.324

@@ -1,0 +1,5 @@
+{
+    // Install LSP-json to get validation and autocompletion in this file.
+    "venvPath": "C:\\Users\\andre\\.pyenv\\pyenv-win\\versions",
+    "venv": "3.8.10",
+}

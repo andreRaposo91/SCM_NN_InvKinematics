@@ -1,0 +1,1 @@
+timestamp: 2024-04-26T172230; traj command: generate_circle(40, 20, (30, 35, 105), (10, 80, 45)); inv_kin_model: inv_pcc_circle;pause_time: 0.75;elapsed_time: 33.642

@@ -1,0 +1,11 @@
+#timestamp: 2024-04-23T164846; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_circle;pause_time: 0.75;elapsed_time: 25.327
+timestamp: 2024-04-24T164951; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_circle;pause_time: 0.75;elapsed_time: 25.316
+#timestamp: 2024-04-24T165233; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_pcc_circle;pause_time: 0.75;elapsed_time: 25.343
+timestamp: 2024-04-26T124004; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn_circle;pause_time: 0.75;elapsed_time: 28.152
+#timestamp: 2024-04-26T124105; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn_circle;pause_time: 0.75;elapsed_time: 28.105
+timestamp: 2024-04-26T124201; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn6_circle;pause_time: 0.75;elapsed_time: 28.129
+#timestamp: 2024-04-26T124259; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn6_circle;pause_time: 0.75;elapsed_time: 28.026
+timestamp: 2024-04-26T124410; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn3_circle;pause_time: 0.75;elapsed_time: 28.131
+#timestamp: 2024-04-26T124503; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_fnn3_circle;pause_time: 0.75;elapsed_time: 28.057
+#timestamp: 2024-05-07T153728; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn-pcc_circle;pause_time: 0.75;elapsed_time: 27.976
+timestamp: 2024-05-07T155717; traj command: generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3)); inv_kin_model: inv_rnn-pcc_circle;pause_time: 0.75;elapsed_time: 27.977

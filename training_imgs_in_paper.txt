@@ -1,0 +1,19 @@
+results\final_datasets3\models_2024-03-26T112415\imgs\mlp_1_75pct_3L.png
+
+results\final_datasets3\models_2024-04-09T130207\imgs\mlp_1_50pct_2L.png
+
+results\final_datasets_rnn\models_2024-04-03T155223\imgs\rnn_100pct_2L.png
+
+results\final_datasets_comp\models_2024-06-08T124704\imgs\mlp_1_75pct_4L.png
+
+results\final_datasets_comp\models_2024-06-06T190740\imgs\mlp_1_100pct_4L.png
+
+results\final_datasets_rnn_comp\models_2024-06-10T152024\imgs\rnn_25pct_2L.png
+
+# write a script that does the following: go to training_imgs_in_paper.
+# txt and for each img find the "results_*" file with the same date as the one inside the path, after "models_".
+# in there find the lines in the "csv" part (look at at any one of the "results_*" before starting to understand the structure) that match the architecture described by the image path.
+# i need to match the pct of training data  and number of layers.
+# from each of the images im going to need to generate a matplotlib figure with this info in the legend, the axis dont matter. ill edit the format afterwards
+
+# if anything is not clear, please ask

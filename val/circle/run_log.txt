@@ -1,0 +1,4 @@
+timestamp: 2024-04-19T171237; traj command: generate_circle(20, 35, (30, 20, 100), (0, 45, 45)); inv_kin_model: inv_fnn3_circle;pause_time: 1.5
+timestamp: 2024-04-19T171534; traj command: generate_circle(25, 50, (0, 0, 100), (0, 0, 0)); inv_kin_model: inv_pcc_circle;pause_time: 1.5
+timestamp: 2024-04-19T171642; traj command: generate_circle(25, 50, (0, 0, 100), (0, 0, 0)); inv_kin_model: inv_pcc_circle;pause_time: 1.5
+timestamp: 2024-04-22T152245; traj command: generate_circle(25, 50, (0, 0, 100), (0, 0, 0)); inv_kin_model: inv_fnn3_circle;pause_time: 0.75
