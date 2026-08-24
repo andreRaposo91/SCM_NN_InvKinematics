@@ -46,7 +46,7 @@ if __name__ == "__main__":
         # ("./data/dataset_284_curv2_2023-12-13T152932.txt", [800, 1220, 2000]),
         # ("./data/dataset_68_vert1_2023-12-19T145145.txt", []),
         # ("./data/dataset_35_curv2_2023-12-19T171459.txt", []),
-        # ("./data/dataset_272_curv2_2024-01-03T154745.txt", [800, 1220, 1800]),  # see len2jtheta@kinematics_functions
+        ("./data/dataset_272_curv2_2024-01-03T154745.txt", [800, 1220, 1800]),  # see len2jtheta@kinematics_functions
         # ("./data/dataset_273_curv2_2024-01-03T164457.txt", [800, 1220, 1800]),
         # ("./data/dataset_368_curv2_2024-06-19T114018.txt", [1000, 1220, 1450, 1700]), # TRASH
         # ("./data/dataset_272_curv2_2024-06-19T113039.txt", [1000, 1220, 1450, 1700]), # TRASH
@@ -55,9 +55,9 @@ if __name__ == "__main__":
         # ("./data/dataset_205_2024-01-12T165908.txt", []),
 
 
-        # ("./data/dataset_1200_2023-12-13T161233.txt", []), # tese plot
-        # ("./data/dataset_1201_2023-12-19T155359.txt", []), # tese plot
-        # ("./data/dataset_1101_2024-02-09T103741.txt", []), # tese plot
+        ("./data/dataset_1200_2023-12-13T161233.txt", []), # tese plot
+        ("./data/dataset_1201_2023-12-19T155359.txt", []), # tese plot
+        ("./data/dataset_1101_2024-02-09T103741.txt", []), # tese plot
         # ("./data/dataset_1200_2023-12-15T145833.txt", []), # many outliers
         # ("./data/dataset_1100_2024-02-07T165437.txt", []), # without extreme outlier
         # ("./data/dataset_1101_2024-02-07T165437.txt", []),
@@ -98,6 +98,8 @@ if __name__ == "__main__":
     # auto_vert_test_analysis(filenames)
     # auto_basic_analysis(filenames, concat=True)
     # repeat_analysis(filenames)
+    # plt.show()
+    # sys.exit()
 
     # validation_analysis(run_folder="./val/cont_circle/", save_plot=False) # zlims=(80,130)
     # validation_analysis(run_folder="./val/cont_circle2/", save_plot=False) # zlims=(80,130)
@@ -122,14 +124,12 @@ if __name__ == "__main__":
     # cont_validation_analysis(run_folder="./cont_val/coil")
     # cont_validation_analysis(run_folder="./cont_val/square2/", save_plot=False) # zlims=(80,130)
 
-    # plt.show()
-    plt.close('all')
-    # sys.exit()
+    plt.show()
+    # plt.close('all')
+    sys.exit()
 
     df_full = pd.concat((df_circle, df_coil, df_square))  #
     print(df_full.head())
-    # print(df_full.groupby(['inv_kin_model', 'test'])['ae_array'].mean().reset_index())
-    # df_full = df_full.merge(df_full.groupby('test')['ae_array'].count().reset_index().rename({'ae_array': 'test_count'}, axis=1), on='test')
     print(df_full.groupby(['inv_kin_model', 'test'])['ae'].mean().reset_index())
     df_full = df_full.merge(df_full.groupby('test')['ae'].count().reset_index().rename({'ae': 'test_count'}, axis=1), on='test')
     print(df_full.head())
@@ -273,4 +273,4 @@ if __name__ == "__main__":
                     loc='upper right', bbox_to_anchor=(0.95, 0.98), fontsize=11,
                     facecolor='white', framealpha=1)
 
-    plt.show()
+    # plt.show()

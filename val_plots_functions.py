@@ -91,7 +91,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
             ax.set_aspect('equal')
             # ax.set_title(f"Target: {t}")
 
-    print("")
+    # print("")
 
     mae_column = []
     ae_column = []
@@ -216,7 +216,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         print("Missing files timestamps\n")
         print(df_runs.loc[runs_idxs, "timestamp"])
         sys.exit()
-    
+
     # figs = [plt.figure(figsize=(6*len(tests),6))] + [plt.figure(figsize=(6*len(models),6)) for _ in range(len(tests)*2)]
     # figs = [plt.figure(figsize=(7*len(tests),6))] + [plt.figure(figsize=(6*len(models),6)) for _ in range(len(tests))] + [plt.figure(figsize=(6*len(models),4)) for _ in range(len(tests))]
     bar_figs = [plt.figure(figsize=(len(models)*1.15, 7)) for _ in range(len(tests))]
@@ -237,14 +237,14 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
     def angles(pts):
         vec1 = np.diff(pts[:-1], axis=0)
-        print(vec1.shape)
+        # print(vec1.shape)
         vec2 = np.diff(pts[1:], axis=0)
         # dots = np.dot(vec1, vec2, axis)
         dots = np.sum(vec1 * vec2, axis=1)
-        print(dots.shape)
+        # print(dots.shape)
         norms = (np.linalg.norm(vec1, axis=1) * np.linalg.norm(vec2, axis=1))
         angs = np.arccos(dots / norms)
-        print(angs.shape)
+        # print(angs.shape)
 
         return np.degrees(angs)
 
@@ -276,7 +276,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
             # ax.set_title(f"Target: {t}")
 
-    print("")
+    # print("")
 
     # return 0
     mae_column = []
@@ -295,7 +295,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
     
     for i, rf in enumerate(runs_files):
-        print("file:", rf[0])
+        # print("file:", rf[0])
         target_idx = tests.index(df_runs["traj command"][rf[1]])
         model_idx = models.index(df_runs["inv_kin_model"][rf[1]])
 
@@ -321,12 +321,12 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         
         mae = np.mean(abs_err_norm, where=~np.isnan(abs_err_norm))
 
-        if mae == np.nan:
-            print(rf[0], '\n')
-        else:
-            print(f"{df_runs['inv_kin_model'][rf[1]]}, test {tests.index(df_runs['traj command'][rf[1]])+1}, pt={df_runs['pause_time'][rf[1]]}s, len: {len(pos_base)+target_len_diff}")
-            print(f'Mean Absolute error to Target: {mae:.4f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
-            print(f'corresp Mean Absolute error to Target: {np.mean(corresp_error):.2f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
+        # if mae == np.nan:
+        #     print(rf[0], '\n')
+        # else:
+        #     print(f"{df_runs['inv_kin_model'][rf[1]]}, test {tests.index(df_runs['traj command'][rf[1]])+1}, pt={df_runs['pause_time'][rf[1]]}s, len: {len(pos_base)+target_len_diff}")
+        #     print(f'Mean Absolute error to Target: {mae:.4f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
+        #     print(f'corresp Mean Absolute error to Target: {np.mean(corresp_error):.2f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
         mae_column.append(mae)
         in_df += 1
         ae_column.append(corresp_error)
@@ -401,7 +401,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     print("Box Plots")
     model_order = ('CC', 'FNN3', 'FNN6', 'RNN', 'FNN3-CC', 'FNN6-CC', 'RNN-CC')
     for i, test in enumerate(tests):
-        print(f"Test {i+1}")
+        # print(f"Test {i+1}")
         # df_bar_plot = df_runs[df_runs["traj command"] == test].drop(columns=["traj command", "timestamp"])
         # df_box_plot = df_runs[df_runs["traj command"] == test].drop(columns=["traj command", "timestamp"]).pivot_table(
             # columns='pause_time', index='inv_kin_model', values='ae', aggfunc=concat_lists)
@@ -412,13 +412,13 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         df_box_plot['inv_kin_model'] = pd.Categorical(df_box_plot['inv_kin_model'], categories=model_order, ordered=True) 
         df_box_plot.sort_values('inv_kin_model')
 
-        print(df_box_plot.head(), df_box_plot.columns)
+        # print(df_box_plot.head(), df_box_plot.columns)
         print(df_box_plot.set_index('inv_kin_model')['ae'].apply(lambda x: np.mean(x)))
         print('\n'.join(map(str, ((i, row['inv_kin_model'], np.mean(row['ae']).astype(float)) for i, row in df_box_plot.iterrows()))))
 
         df_box_plot = df_box_plot.explode('ae', False)
-        print(df_box_plot.head())
-        print(df_box_plot.groupby('inv_kin_model')['ae'].mean().reset_index())
+        # print(df_box_plot.head())
+        # print(df_box_plot.groupby('inv_kin_model')['ae'].mean().reset_index())
         # print(df_box_plot.shape)
         sns.boxplot(x='inv_kin_model', y='ae', data=df_box_plot, ax=bar_axs[i], color='paleturquoise',
             showmeans=True, meanline=True, meanprops={'color': 'blue', 'linewidth': 1.5}, medianprops={'linewidth': 1.5})

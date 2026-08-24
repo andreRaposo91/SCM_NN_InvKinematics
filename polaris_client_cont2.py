@@ -161,11 +161,11 @@ async def main():
     # points_gen_str = "generate_square(8, 45, (0, 0, 110), (0, 45, 0))"; pause_time = 2.25; folder="val"; test ="square"
     # points_gen_str = "generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/square2"; test ="square"
     # # arduino stap delay: 2000
-    # points_gen_str = "generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4))"; pause_time = 0.23; folder="cont_val/cont_square2"; test ="square"
+    points_gen_str = "generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4))"; pause_time = 0.23; folder="cont_val/cont_square2"; test ="square"
     
     # points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/circle"; test="circle"
     # # arduino step delay: 2500
-    # points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6))"; pause_time = 0.15; folder="cont_val/cont_circle"; test="circle"
+    points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6))"; pause_time = 0.15; folder="cont_val/cont_circle"; test="circle"
     
     # points_gen_str = "generate_circle(25, 35, (0, 20, 110), (0, 45, 90), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/circle2"; test="circle"
     # # arduino step delay: 1700
@@ -184,12 +184,12 @@ async def main():
     # log_run = True
     
     plot = False
-    # plot = True
+    plot = True
 
-    # model = 'pcc'
+    model = 'pcc'
     # model = 'fnn3'
     # model = 'fnn6'
-    model = 'rnn'
+    # model = 'rnn'
     # model = 'fnn3_pcc'
     # model = 'fnn6_pcc'
     # model = 'rnn_pcc'
@@ -270,7 +270,7 @@ async def main():
         # # traj = np.insert(traj, 0, [1220, 1220, 1220], axis=0)
         # print("avg ref err:", sum(np.sum(np.abs(og_traj - traj), axis=0) / len(traj)) / 3)
         dataset_type = "_" + "inv_pcc_" + test
-    
+
     if plot:
         plt.figure(figsize=(12,5)).tight_layout(pad=3)
         plt.gcf().suptitle(f"Planned Trajectory - {test.capitalize()}")
@@ -292,9 +292,9 @@ async def main():
         # plt.gca().legend(title="Servo References")
         plt.gca().plot(pred_traj_, label=['1', '2', '3'])
         plt.gca().hlines([86, 144], [0]*2, [len(traj)]*2, color='k', linestyle='--', label="limits")
-        plt.gca().legend(title="Cables", loc="upper right", bbox_to_anchor=(1.2, 1))
-        plt.gca().set_title("Cable Lengths along trajectory")
-        plt.ylabel("Cable Length [mm]")
+        plt.gca().legend(title="Flexible Rods", loc="upper right", bbox_to_anchor=(1.28, 1))
+        plt.gca().set_title("Flexible Rod Lengths along trajectory")
+        plt.ylabel("Flexible Rod Length [mm]")
         plt.xlabel("Trajectory Points")
         # print(len(traj))
         # print(traj[:10], traj[-4:])

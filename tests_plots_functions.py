@@ -28,7 +28,7 @@ def plot_curv_test_3d(fixed_pos, num_fixed, traj, pos_base, est_pos_base, est_fl
     mask_curv_test = [[False] * len(traj)] * 9
 
     traj_ = jtheta2len(traj)
-        
+
     for i, fix_pos in enumerate(fixed_pos):
         for j in range(3):
             idx = [0,1,2]
@@ -71,25 +71,25 @@ def plot_curv_test_3d(fixed_pos, num_fixed, traj, pos_base, est_pos_base, est_fl
                 # xz_axs[i].plot(*zip(*est_pos_base_rot), marker="o", markersize=4, linestyle=":")
                 # xy_axs[i].plot(*zip(*est_pos_base_rot), marker="o", markersize=4, linestyle=":")
 
-            xz_axs[i].plot(*zip(*pos_base_rot_neg), marker="x", label='Moving Down', markersize=5, color='r', alpha=0.7)
-            xz_axs[i].plot(*zip(*pos_base_rot_pos), marker="x", label='Moving Up', markersize=5, color='g', alpha=0.7)
-            xy_axs[i].plot(*zip(*pos_base_rot_neg), marker="x", label='Moving Down', markersize=5, color='r', alpha=0.7)
-            xy_axs[i].plot(*zip(*pos_base_rot_pos), marker="x", label='Moving Up', markersize=5, color='g', alpha=0.7)
-            # ax[i,j].plot(*zip(*pos_base_rot), marker="o", label=plt_label, markersize=5)
-            xz_axs[i].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
-            xy_axs[i].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
-            # ax[i,j].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
-            xz_axs[i].scatter(*pos_base_rot[-1], marker="s", label="Finish", color="r")
-            xy_axs[i].scatter(*pos_base_rot[-1], marker="s", label="Finish", color="r")
+            # xz_axs[i].plot(*zip(*pos_base_rot_neg), marker="x", label='Moving Down', markersize=5, color='r', alpha=0.7)
+            # xz_axs[i].plot(*zip(*pos_base_rot_pos), marker="x", label='Moving Up', markersize=5, color='g', alpha=0.7)
+            # xy_axs[i].plot(*zip(*pos_base_rot_neg), marker="x", label='Moving Down', markersize=5, color='r', alpha=0.7)
+            # xy_axs[i].plot(*zip(*pos_base_rot_pos), marker="x", label='Moving Up', markersize=5, color='g', alpha=0.7)
+            # # ax[i,j].plot(*zip(*pos_base_rot), marker="o", label=plt_label, markersize=5)
+            # xz_axs[i].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
+            # xy_axs[i].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
+            # # ax[i,j].scatter(*pos_base_rot[0], marker="s", label="Start", color="g")
+            # xz_axs[i].scatter(*pos_base_rot[-1], marker="s", label="Finish", color="r")
+            # xy_axs[i].scatter(*pos_base_rot[-1], marker="s", label="Finish", color="r")
             # ax[i,j].scatter(*pos_base_rot[-1], marker="s", label="Finish", color="r")
             draw_robot(xz_axs[i], alpha_mult=0.4)
             draw_robot(xy_axs[i], alpha_mult=0.3)
             # draw_robot(ax[i,j], alpha_mult=0.6)
-            figs[i].suptitle(f"Length of Fixed Cable{s} : {jtheta2len(fixed_pos[i]):.2f} mm")
+            figs[i].suptitle(f"Length of Fixed Flexible Rod{s} : {jtheta2len(fixed_pos[i]):.2f} mm")
             xz_axs[i].set_title("Side View")
             xy_axs[i].set_title("Top View")
             # ax[i,j].set_title(f"Fixed Length of Cable {j}: {jtheta2len(fixed_pos[i]):.2f} mm")
-            
+
                 # ax[i,j].plot(*zip(*est_pos_base_rot), marker="*", linestyle=":", label="est " + plt_label)
             xz_axs[i].set_xlabel('x [mm]')
             xz_axs[i].set_zlabel('z [mm]')
@@ -171,7 +171,7 @@ def plot_curv_test_err2(fixed_pos, num_fixed, traj, traj_, pos_base, est_pos_bas
     test_plur = 's' if num_fixed == 2 else ''
     # test_fig.suptitle(f'Cable Lengths during Test w/ {num_fixed} fixed cable{test_plur}')
     test_colors = ('r', 'b', 'g')
-    test_labels = ('Moving Cables', 'Fixed Cable') if num_fixed == 1 else ('Moving Cable', 'Fixed Cables')
+    test_labels = ('Moving FR', 'Fixed FR') if num_fixed == 1 else ('Moving FR', 'Fixed FR')
 
     # abs_err_fig, abs_err_axs = plt.subplots(1, len(fixed_pos), figsize=(14,4))
     # abs_err_fig.tight_layout(pad=3.5, w_pad=7.5)
@@ -300,7 +300,7 @@ def plot_curv_test_err2(fixed_pos, num_fixed, traj, traj_, pos_base, est_pos_bas
         if vert_lines[1] < 1:
                 # print(vert_lines)
             # abs_err_axs[i].vlines(vert_lines, [abs_err_axs[i].get_ylim()[0]]*2, [abs_err_axs[i].get_ylim()[1]]*2, color='r', label='Spring Resting Length\nPosition', linestyle='dotted')
-            abs_err_axs[i].vlines(fixed_pos_len, [abs_err_axs[i].get_ylim()[0]]*2, [abs_err_axs[i].get_ylim()[1]]*2, color='k', label='Fixed Cable Length', linestyle='dotted')
+            abs_err_axs[i].vlines(fixed_pos_len, [abs_err_axs[i].get_ylim()[0]]*2, [abs_err_axs[i].get_ylim()[1]]*2, color='k', label='Fixed FR Length', linestyle='dotted')
 
         abs_err_axs[i].set_xlabel('Moving Cable Length [mm]')
         abs_err_axs[i].set_ylabel('Absolute Error [mm]')
@@ -339,11 +339,11 @@ def plot_curv_test_err2(fixed_pos, num_fixed, traj, traj_, pos_base, est_pos_bas
             # ax[i,j].scatter(0, abs_err_curv2[0], color="g") # label="Start",
             ax[i,j].scatter(plot_len2[-1], abs_err_curv2[-1], color="r") # label="Finish",
             # ax[i,j].scatter(len(pos_base_rot2)-1, abs_err_curv2[-1], color="r") # label="Finish",
-            
+
             if vert_lines[1] < 1:
                 # print(vert_lines)
                 # ax[i,j].vlines(vert_lines, [ax[i,j].get_ylim()[0]]*2, [ax[i,j].get_ylim()[1]]*2, color='r', label='Spring Resting Length Position', linestyle='dotted')
-                ax[i,j].vlines(fixed_pos_len, [ax[i,j].get_ylim()[0]]*2, [ax[i,j].get_ylim()[1]]*2, color='k', label='Fixed Cable Length', linestyle='dotted')
+                ax[i,j].vlines(fixed_pos_len, [ax[i,j].get_ylim()[0]]*2, [ax[i,j].get_ylim()[1]]*2, color='k', label='Fixed FR Length', linestyle='dotted')
             ax[i,j].set_ylabel(axis_labels[j])
             if i == 2: ax[i, j].set_xlabel('Moving Cable Length [mm]')
             if num_fixed == 1: ax[i,j].set_title(f"Length of Fixed Cable: {round(jtheta2len(fixed_pos[i]))} mm")
@@ -352,7 +352,7 @@ def plot_curv_test_err2(fixed_pos, num_fixed, traj, traj_, pos_base, est_pos_bas
             ax[i,j].hlines(0, -1, 1, linestyle='--', color='k')
 
     # ax[0,0].legend(loc='lower right', bbox_to_anchor=(0, 1))
-    ax[0,2].legend(loc='lower left', bbox_to_anchor=(0.8, 0.7))
+    ax[0,2].legend(loc='lower left', bbox_to_anchor=(1.05, 0.7))
 
 def plot_curv_test_2d_traj2(fixed_pos, num_fixed, traj, traj_, pos_base, est_pos_base, est_flag, ax, plt_label='test'):
     mask_curv_test = [[False] * len(traj)] * 9
@@ -759,7 +759,7 @@ def plot_abs_err(pos_base, est_pos_base, abs_err_norm, mean_traj_, xyz_flag=Fals
             ax.annotate(i+1, (np.linalg.norm(pos_base[:,:2], axis=1)[i], abs_err_norm[i]))
 
     plt.xlabel(r"Distance to $z$-axis [mm]")
-    plt.title("Mean cable length [mm] (colormapped)")
+    plt.title("Mean Flexible Rod length [mm] (colormapped)")
     # plt.title(r"Colormap: distance to $z$-axis [mm]")
     # plt.xlabel(r"Mean cable length [mm]")
     plt.ylabel(r"CC Absolute Error [mm]")

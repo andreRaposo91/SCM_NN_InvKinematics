@@ -172,9 +172,9 @@ def auto_vert_test_analysis(filenames):
 def auto_curv_test_analysis_err(filenames):
     max_fixed_pos_len = max([len(fixed_pos) for _, fixed_pos in filenames])
     fig1, ax1 = plt.subplots(max_fixed_pos_len, 3, figsize=(16,12))
-    fig1.suptitle("Absolute Error (mm) as a function of lengths of non-fixed cables (mm)")
+    fig1.suptitle("Absolute Error (mm) as a function of lengths of non-fixed flexible rods (mm)")
     fig2, ax2 = plt.subplots(max_fixed_pos_len, 3, figsize=(16,12))
-    fig2.suptitle("Absolute Error (mm) as a function of length of non-fixed cable (mm)")
+    fig2.suptitle("Absolute Error (mm) as a function of length of non-fixed flexible rods (mm)")
     not_first = False
     for i, filename in enumerate(filenames):
         if 'curv2' not in filename[0]:
