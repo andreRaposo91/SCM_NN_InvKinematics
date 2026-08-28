@@ -1,28 +1,28 @@
 import os, sys
-import tkinter
-from tkinter import filedialog
 import numpy as np
-import seaborn as sns
 from math import copysign, ceil
 
-tex_plots = False
-if tex_plots:
-    import matplotlib
-    matplotlib.use("pgf")
-    matplotlib.rcParams.update({
-        "pgf.texsystem": "pdflatex",
-        'font.family': 'sans-serif',
-        'text.usetex': True,
-        'pgf.rcfonts': False,
-    })
-import matplotlib.pyplot as plt
-plt.rcParams.update({'font.size': 12})
-from math import copysign
-
 from data_functions import parse_cont_dataset, polaris2base
-from kinematics_functions import T_beModule
 from point_clouds import generate_square, generate_circle, generate_coil
-from draw_functions import draw_robot
+
+tex_plots = False
+
+
+class _NoOpPlot:
+    """Absorbs visualization calls when plots are disabled."""
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __getattr__(self, name):
+        if name == "get_title":
+            return lambda: ""
+        if name == "get_axes":
+            return lambda: [self]
+        if name == "get_xticklabels":
+            return lambda: []
+        return self
+
 
 def parse_log(log_filepath):
     runs = {}
@@ -45,7 +45,16 @@ def parse_log(log_filepath):
     return runs
 
 import pandas as pd
-def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=False):
+def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=False, enable_plots=False):
+
+    if enable_plots:
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        plt.rcParams.update({'font.size': 12})
+    else:
+        # Avoid importing GUI/image libraries or creating figures on Android.
+        sns = plt = _NoOpPlot()
+        save_plot = False
 
     if run_folder == "":
         run_folder = "./val/"
@@ -193,9 +202,20 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
             fig.savefig(os.path.join(run_folder, filenames[i] + '.pgf'))
 
 
-def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=False, save_plot=True):
+def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=False, save_plot=True, enable_plots=False):
 
     global tex_plots
+
+    if enable_plots:
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        from draw_functions import draw_robot
+        plt.rcParams.update({'font.size': 12})
+    else:
+        # Avoid importing GUI/image libraries or creating figures on Android.
+        sns = plt = _NoOpPlot()
+        draw_robot = _NoOpPlot()
+        save_plot = False
 
     if run_folder == "":
         run_folder = "./val/"

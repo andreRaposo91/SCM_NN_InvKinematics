@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import time
 
 def sinX(alpha):
@@ -109,6 +108,7 @@ def T_beModule(p, base, fig, ax):
     T_be = T_b0 @ A_01 @ T_12 @ A_23 @ T_3e
 
     if fig > 0:
+        import matplotlib.pyplot as plt
         s = np.column_stack((base @ np.array([0, 0, 0, 1]),
                          T_b0 @ np.array([0, 0, 0, 1])))       
 

@@ -1,29 +1,8 @@
 import os, sys
-import tkinter
-from tkinter import filedialog
 import numpy as np
-import seaborn as sns
-from math import copysign
-
-tex_plots = False
-if tex_plots:
-    import matplotlib
-    matplotlib.use("pgf")
-    matplotlib.rcParams.update({
-        "pgf.texsystem": "pdflatex",
-        'font.family': 'sans-serif',
-        'text.usetex': True,
-        'pgf.rcfonts': False,
-        'font.size': 22,
-    })
-import matplotlib.pyplot as plt
 from math import copysign
 
 from kinematics_functions import T_beModule
-from point_clouds import generate_square, generate_circle, generate_coil
-from draw_functions import draw_robot
-
-from tests_plots_functions import *
 
 def parse_dataset(file_path):
     filename = os.path.basename(os.path.realpath(file_path))
@@ -146,7 +125,9 @@ def polaris2base(traj, ref_T, pos):
     return traj_, pos_base, est_pos_base
 
 
-def auto_vert_test_analysis(filenames):
+def auto_vert_test_analysis(filenames, enable_plots=False):
+    if enable_plots:
+        from tests_plots_functions import plot_vert_test
     for i, filename in enumerate(filenames):
         if 'vert' not in filename[0]: print("Not Vertical Test")
 
@@ -163,13 +144,19 @@ def auto_vert_test_analysis(filenames):
         print('Min Relative error:', np.min(np.abs(rel_err_norm)) * 100, '%')
 
         # plot_vert_test(20, pos_base, est_pos_base)
-        plot_vert_test(0, pos_base, est_pos_base)
+        if enable_plots:
+            plot_vert_test(0, pos_base, est_pos_base)
         # plot_rel_err(pos_base, est_pos_base, rel_err_norm, np.mean(traj_, axis=1))
         # plot_abs_err(pos_base, est_pos_base, abs_err_norm, np.mean(traj_, axis=1), xyz_flag=False, d3d_flag=False)
 
 
 
-def auto_curv_test_analysis_err(filenames):
+def auto_curv_test_analysis_err(filenames, enable_plots=False):
+    if not enable_plots:
+        print("Plotting disabled; pass enable_plots=True to generate figures.")
+        return
+    import matplotlib.pyplot as plt
+    from tests_plots_functions import plot_curv_test_err2
     max_fixed_pos_len = max([len(fixed_pos) for _, fixed_pos in filenames])
     fig1, ax1 = plt.subplots(max_fixed_pos_len, 3, figsize=(16,12))
     fig1.suptitle("Absolute Error (mm) as a function of lengths of non-fixed flexible rods (mm)")
@@ -198,7 +185,12 @@ def auto_curv_test_analysis_err(filenames):
 
         # plot_basic(pos_base, est_pos_base, rel_err_norm, np.mean(traj_, axis=1))
 
-def auto_curv_test_analysis_2d(filenames):
+def auto_curv_test_analysis_2d(filenames, enable_plots=False):
+    if not enable_plots:
+        print("Plotting disabled; pass enable_plots=True to generate figures.")
+        return
+    import matplotlib.pyplot as plt
+    from tests_plots_functions import plot_curv_test_2d_traj2
     fig1, ax1 = plt.subplots(3, 2, figsize=(10,10))
     # fig1.suptitle("Trajectory in xy, rotated to align with x axis") # traj1
     fig1.suptitle("Trajectory in x and z, with points rotated to align with y") # traj2
@@ -230,7 +222,11 @@ def auto_curv_test_analysis_2d(filenames):
 
         # plot_basic(pos_base, est_pos_base, rel_err_norm, np.mean(traj_, axis=1))
 
-def auto_curv_test_analysis_3d(filenames):
+def auto_curv_test_analysis_3d(filenames, enable_plots=False):
+    if not enable_plots:
+        print("Plotting disabled; pass enable_plots=True to generate figures.")
+        return
+    from tests_plots_functions import plot_curv_test_3d
     # fig1, ax1 = plt.subplots(2, 3, figsize=(15,12), subplot_kw={'projection': '3d', 'aspect': 'equal'})
     # fig2, ax2 = plt.subplots(2, 3, figsize=(15,12), subplot_kw={'projection': '3d', 'aspect': 'equal'})
     # for i in range(3):
@@ -292,7 +288,9 @@ def auto_curv_test_analysis_3d(filenames):
 
         est_flag = False
 
-def auto_basic_analysis(filenames, concat=True):
+def auto_basic_analysis(filenames, concat=True, enable_plots=False):
+    if enable_plots:
+        from tests_plots_functions import plot_abs_err, plot_rel_err
     total_datapoints = 0
     for i, filename in enumerate(filenames):
         traj, ref_T, pos = parse_dataset(filename[0])
@@ -328,7 +326,8 @@ def auto_basic_analysis(filenames, concat=True):
             concat_rel_err_norm = np.concatenate((rel_err_norm, concat_rel_err_norm), axis=0)
         else:
             # plot_rel_err(pos_base, est_pos_base, rel_err_norm, np.mean(traj_, axis=1), xyz_flag=False, d3d_flag=True)
-            plot_abs_err(pos_base, est_pos_base, abs_err_norm, np.mean(traj_, axis=1), xyz_flag=False, d3d_flag=True)
+            if enable_plots:
+                plot_abs_err(pos_base, est_pos_base, abs_err_norm, np.mean(traj_, axis=1), xyz_flag=False, d3d_flag=True)
             # plot_vert_test(0, pos_base, est_pos_base)
         # plot_grid(traj_)
         total_datapoints += len(pos_base)
@@ -336,13 +335,20 @@ def auto_basic_analysis(filenames, concat=True):
     if concat:
         print("Concat MSE:", np.mean(np.linalg.norm(concat_pos_base - concat_est_pos_base, axis=1)))
         print("Mean pos:", np.mean(concat_pos_base, axis=0))
-        plot_rel_err(concat_pos_base, concat_est_pos_base, concat_rel_err_norm, np.mean(concat_traj_, axis=1), xyz_flag=False, d3d_flag=True)
-        plot_abs_err(concat_pos_base, concat_est_pos_base, concat_abs_err_norm, np.mean(concat_traj_, axis=1), xyz_flag=False, d3d_flag=True)
+        if enable_plots:
+            plot_rel_err(concat_pos_base, concat_est_pos_base, concat_rel_err_norm, np.mean(concat_traj_, axis=1), xyz_flag=False, d3d_flag=True)
+            plot_abs_err(concat_pos_base, concat_est_pos_base, concat_abs_err_norm, np.mean(concat_traj_, axis=1), xyz_flag=False, d3d_flag=True)
         # plot_vert_test(0, concat_pos_base, concat_est_pos_base)
 
     print("total", total_datapoints)
 
-def repeat_analysis(filenames):
+def repeat_analysis(filenames, enable_plots=False):
+    if not enable_plots:
+        print("Plotting disabled; pass enable_plots=True to generate figures.")
+        return
+    import matplotlib.pyplot as plt
+    from draw_functions import draw_robot
+    from tests_plots_functions import plot_3d
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     concat_pos_base = np.empty((len(filenames), 10, 3))

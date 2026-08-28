@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from itertools import chain
 from scipy.spatial.transform import Rotation as R
 from math import ceil
@@ -392,6 +391,8 @@ def generate_coil(num_points, radius, height, num_turns, starting_point=(0, 0, 0
     return points_translated
     
 def plot_pts(points, quiv=False, labels=False):
+    import matplotlib.pyplot as plt
+
     x, y, z = zip(*points)
 
     fig = plt.figure()

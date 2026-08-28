@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 import sys
+
+# Set to True only when running locally with the optional visualization stack.
+ENABLE_PLOTS = False
+
+if ENABLE_PLOTS:
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
 from data_functions import (
     auto_curv_test_analysis_err,
     auto_curv_test_analysis_3d,
@@ -111,20 +116,20 @@ if __name__ == "__main__":
     # cont_validation_analysis(run_folder="./cont_val/_circle")
     # cont_validation_analysis(run_folder="./cont_val/_cont_circle")
     # cont_validation_analysis(run_folder="./cont_val/cont_circle", save_plot=False)
-    df_circle = cont_validation_analysis(run_folder="./cont_val/cont_circle", save_plot=False)
+    df_circle = cont_validation_analysis(run_folder="./cont_val/cont_circle", save_plot=False, enable_plots=ENABLE_PLOTS)
     # cont_validation_analysis(run_folder="./cont_val/cont_circle2", robot=True)
     # cont_validation_analysis(run_folder="./cont_val/cont_circle3")
     # cont_validation_analysis(run_folder="./cont_val/cont_coil", save_plot=False, robot=False)
     # cont_validation_analysis(run_folder="./cont_val/cont_square2/", save_plot=False) # zlims=(80,130)
-    df_coil = cont_validation_analysis(run_folder="./cont_val/cont_coil", save_plot=False, robot=False)
-    df_square = cont_validation_analysis(run_folder="./cont_val/cont_square2/", save_plot=False) # zlims=(80,130)
+    df_coil = cont_validation_analysis(run_folder="./cont_val/cont_coil", save_plot=False, robot=False, enable_plots=ENABLE_PLOTS)
+    df_square = cont_validation_analysis(run_folder="./cont_val/cont_square2/", save_plot=False, enable_plots=ENABLE_PLOTS) # zlims=(80,130)
     # cont_validation_analysis(run_folder="./cont_val/circle")
     # cont_validation_analysis(run_folder="./cont_val/circle2")
     # cont_validation_analysis(run_folder="./cont_val/circle3")
     # cont_validation_analysis(run_folder="./cont_val/coil")
     # cont_validation_analysis(run_folder="./cont_val/square2/", save_plot=False) # zlims=(80,130)
 
-    plt.show()
+    # plt.show()
     # plt.close('all')
     sys.exit()
 
