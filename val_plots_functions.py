@@ -24,6 +24,11 @@ from kinematics_functions import T_beModule
 from point_clouds import generate_square, generate_circle, generate_coil
 from draw_functions import draw_robot
 
+MODEL_ORDER = ('CC', 'FNN3', 'FNN6', 'RNN', 'FNN3-CC', 'FNN6-CC', 'RNN-CC')
+
+def display_model_name(name):
+    return name.split('_')[1].upper().replace('PCC', 'CC')
+
 def parse_log(log_filepath):
     runs = {}
     with open(log_filepath, 'r') as file:
@@ -59,8 +64,9 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     # sys.exit()
     # print(runs.keys())
     figs = []
-    tests = list(set(runs["traj command"]))
-    models = list(set(runs["inv_kin_model"]))
+    tests = list(dict.fromkeys(runs["traj command"]))
+    models = [model for model in MODEL_ORDER
+              if model in {display_model_name(name) for name in runs["inv_kin_model"]}]
     pts = list(set(runs["pause_time"]))
     print(models)
     runs_files = [(run_folder + file, runs["timestamp"].index(file.split('_')[-1][:-4])) for file in os.listdir(run_folder) if file.split('_')[-1][:-4] in runs['timestamp']]
@@ -99,7 +105,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     in_df = 0
     for i, rf in enumerate(runs_files):
         target_idx = tests.index(runs["traj command"][rf[1]])
-        model_idx = models.index(runs["inv_kin_model"][rf[1]])
+        model_idx = models.index(display_model_name(runs["inv_kin_model"][rf[1]]))
 
         traj, ref_T, pos = parse_dataset(rf[0])
         _, pos_base, _ = polaris2base(traj, ref_T, pos)
@@ -161,7 +167,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     print("in_df", in_df, "; drops", drops)
     df_runs["mae"] = mae_column
     df_runs["ae_array"] = ae_column
-    df_runs["inv_kin_model"] = [model.split('_')[1] for model in df_runs["inv_kin_model"]]
+    df_runs["inv_kin_model"] = df_runs["inv_kin_model"].apply(display_model_name)
     bar_width = 0.75
     print("Box Plots")
     for i, test in enumerate(tests):
@@ -175,7 +181,6 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
         # print(df_box_plot.shape)
         sns.boxplot(x='inv_kin_model', y='ae_array', hue='pause_time', data=df_box_plot, ax=bar_axs[i])
         for model in models:
-            model = model.split('_')[1]
             # print(df_box_plot[(df_box_plot['inv_kin_model'] == model) & (df_box_plot['ae_array'] > y_lim / 2)].shape)
             if (outside_num := df_box_plot[(df_box_plot['inv_kin_model'] == model) & (df_box_plot['ae_array'] > y_lim)].shape[0]) > 0:
                 print("Values outside plot for model", model, ":", outside_num)
@@ -207,8 +212,10 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     # sys.exit()
     # print(runs.keys())
     figs = []
-    tests = list(set(df_runs["traj command"]))
-    models = list(set(df_runs["inv_kin_model"]))
+    tests = list(dict.fromkeys(df_runs["traj command"]))
+    df_runs["inv_kin_model"] = df_runs["inv_kin_model"].apply(display_model_name)
+    models = [model for model in MODEL_ORDER
+              if model in df_runs["inv_kin_model"].unique()]
     runs_files = [(os.path.join(run_folder, file), df_runs["timestamp"].to_list().index(file.split('_')[-1][:-4])) for file in os.listdir(run_folder) if file.split('_')[-1][:-4] in df_runs['timestamp'].to_list()]
     runs_idxs = list(range(df_runs.shape[0]))
     [runs_idxs.remove(idx) for _, idx in runs_files]
@@ -351,11 +358,11 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             color='r', linestyle='dotted', alpha=0.8, label="Sharp Corners") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
             
         if scatter_axs[model_idx].get_title() == "":
-            scatter_axs[model_idx].set_title(f"{df_runs['inv_kin_model'][rf[1]].split('_')[1].upper().replace('PCC', 'CC')}")
+            scatter_axs[model_idx].set_title(df_runs['inv_kin_model'][rf[1]])
             # scatter_axs[target_idx][model_idx].set_title(f"Measured Position along Trajectory")
         
         if error_axs[model_idx].get_title() == "":
-            error_axs[model_idx].set_title(f"{df_runs['inv_kin_model'][rf[1]].split('_')[1].upper().replace('PCC', 'CC')}")
+            error_axs[model_idx].set_title(df_runs['inv_kin_model'][rf[1]])
 
     # return
     for i, ax in enumerate(error_axs):
@@ -396,10 +403,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     print("in_df", in_df, "; drops", drops)
     df_runs["mae"] = mae_column
     df_runs["ae"] = ae_column
-    df_runs["inv_kin_model"] = df_runs['inv_kin_model'].apply(lambda x: x.split('_')[1].upper().replace('PCC', 'CC'))
     bar_width = 0.75
     print("Box Plots")
-    model_order = ('CC', 'FNN3', 'FNN6', 'RNN', 'FNN3-CC', 'FNN6-CC', 'RNN-CC')
     for i, test in enumerate(tests):
         # print(f"Test {i+1}")
         # df_bar_plot = df_runs[df_runs["traj command"] == test].drop(columns=["traj command", "timestamp"])
@@ -409,8 +414,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
         df_box_plot['test'] = test
         df_box_plot['pause_time'] = df_box_plot['pause_time'].apply(lambda x: f'{x}s')
-        df_box_plot['inv_kin_model'] = pd.Categorical(df_box_plot['inv_kin_model'], categories=model_order, ordered=True) 
-        df_box_plot.sort_values('inv_kin_model')
+        df_box_plot['inv_kin_model'] = pd.Categorical(df_box_plot['inv_kin_model'], categories=models, ordered=True)
+        df_box_plot = df_box_plot.sort_values('inv_kin_model')
 
         # print(df_box_plot.head(), df_box_plot.columns)
         print(df_box_plot.set_index('inv_kin_model')['ae'].apply(lambda x: np.mean(x)))
@@ -423,7 +428,6 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         sns.boxplot(x='inv_kin_model', y='ae', data=df_box_plot, ax=bar_axs[i], color='paleturquoise',
             showmeans=True, meanline=True, meanprops={'color': 'blue', 'linewidth': 1.5}, medianprops={'linewidth': 1.5})
         for model in models:
-            model = model.split('_')[1]
             # print(df_box_plot[(df_box_plot['inv_kin_model'] == model) & (df_box_plot['ae'] > y_lim / 2)].shape)
             if (outside_num := df_box_plot[(df_box_plot['inv_kin_model'] == model) & (df_box_plot['ae'] > np.max(df_box_plot["ae"]) * 1.05)].shape[0]) > 0:
                 print("Values outside plot for model", model, ":", outside_num)
@@ -461,7 +465,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             fig.get_axes()[0].set_xticklabels(new_labels)
             print(fig.get_axes()[0].get_xticklabels())
             # fig.get_axes()[0].set_xticklabels([label.set_text(label.get_text().replace('PCC', 'CC')) for label in fig.get_axes()[0].get_xticklabels() if 'PCC' in label])
-            fig.savefig(filenames[0] + ext)
+            fig.savefig(filenames[0] + '_t' + str(i + 1) + ext)
             # fig.savefig(filenames[0] + ext)
 
         for i, fig in enumerate(scatter_figs):
