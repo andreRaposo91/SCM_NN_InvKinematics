@@ -59,6 +59,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
 
     runs = parse_log(run_log_path)
     df_runs = pd.DataFrame(runs)
+    df_runs["inv_kin_model"] = df_runs["inv_kin_model"].apply(display_model_name)
     print(df_runs.shape)
     # print(df_runs.head())
     # sys.exit()
@@ -66,7 +67,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     figs = []
     tests = list(dict.fromkeys(runs["traj command"]))
     models = [model for model in MODEL_ORDER
-              if model in {display_model_name(name) for name in runs["inv_kin_model"]}]
+              if model in df_runs["inv_kin_model"].unique()]
     pts = list(set(runs["pause_time"]))
     print(models)
     runs_files = [(run_folder + file, runs["timestamp"].index(file.split('_')[-1][:-4])) for file in os.listdir(run_folder) if file.split('_')[-1][:-4] in runs['timestamp']]
@@ -99,13 +100,14 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
 
     # print("")
 
-    mae_column = []
-    ae_column = []
+    # Results are keyed by run-log index because filesystem order is not stable.
+    mae_column = pd.Series(index=df_runs.index, dtype=float)
+    ae_column = pd.Series(index=df_runs.index, dtype=object)
     drops = 0
     in_df = 0
     for i, rf in enumerate(runs_files):
         target_idx = tests.index(runs["traj command"][rf[1]])
-        model_idx = models.index(display_model_name(runs["inv_kin_model"][rf[1]]))
+        model_idx = models.index(df_runs["inv_kin_model"][rf[1]])
 
         traj, ref_T, pos = parse_dataset(rf[0])
         _, pos_base, _ = polaris2base(traj, ref_T, pos)
@@ -113,7 +115,8 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
         target_len_diff = len(pos_base) - len(targets[target_idx])
         if target_len_diff < 0:
             print("bad_dataset", i)
-            df_runs.drop(i, inplace=True)
+            mae_column.at[rf[1]] = np.nan
+            ae_column.at[rf[1]] = np.array([])
             drops += 1
             continue
         abs_err_norm = np.linalg.norm(pos_base[target_len_diff:] - targets[target_idx], axis=1)
@@ -127,19 +130,19 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
         else:
             print(f"{runs['inv_kin_model'][rf[1]]}, test {tests.index(runs['traj command'][rf[1]])+1}, pt={runs['pause_time'][rf[1]]}s, len: {len(pos_base)+target_len_diff}")
             print(f'Mean Absolute error to Target: {mae:.4f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
-        mae_column.append(mae)
+        mae_column.at[rf[1]] = mae
         in_df += 1
-        ae_column.append(abs_err_norm)
+        ae_column.at[rf[1]] = abs_err_norm
 
         scatter_axs[target_idx][model_idx].plot(*pos_base.T, label=f"pt={runs['pause_time'][rf[1]]}s", marker='.') # {runs['inv_kin_model'][rf[1]].split('_')[1]},
         error_axs[target_idx][model_idx+len(models)].plot(error_dot, '--', label=f"error_dot_pos_diff, pt={runs['pause_time'][rf[1]]}s") # {runs['inv_kin_model'][rf[1]].split('_')[1]},
         error_axs[target_idx][model_idx].plot(abs_err_norm, label=f"abs_error, pt={runs['pause_time'][rf[1]]}s") # {runs['inv_kin_model'][rf[1]].split('_')[1]},
 
         if scatter_axs[target_idx][model_idx].get_title() == "":
-            scatter_axs[target_idx][model_idx].set_title(f"{runs['inv_kin_model'][rf[1]].split('_')[1]}")
+            scatter_axs[target_idx][model_idx].set_title(df_runs["inv_kin_model"][rf[1]])
         
         if error_axs[target_idx][model_idx].get_title() == "":
-            error_axs[target_idx][model_idx].set_title(f"{runs['inv_kin_model'][rf[1]].split('_')[1]}")
+            error_axs[target_idx][model_idx].set_title(df_runs["inv_kin_model"][rf[1]])
 
     for err in error_axs:
         for i, ax in enumerate(err):
@@ -167,7 +170,6 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     print("in_df", in_df, "; drops", drops)
     df_runs["mae"] = mae_column
     df_runs["ae_array"] = ae_column
-    df_runs["inv_kin_model"] = df_runs["inv_kin_model"].apply(display_model_name)
     bar_width = 0.75
     print("Box Plots")
     for i, test in enumerate(tests):
@@ -177,6 +179,8 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
             # columns='pause_time', index='inv_kin_model', values='ae_array', aggfunc=concat_lists)
         df_box_plot = df_runs[df_runs["traj command"] == test].loc[:, ['ae_array', 'inv_kin_model', 'pause_time']]
 
+        df_box_plot['inv_kin_model'] = pd.Categorical(df_box_plot['inv_kin_model'], categories=models, ordered=True)
+        df_box_plot = df_box_plot.sort_values('inv_kin_model')
         df_box_plot = df_box_plot.explode('ae_array', True)
         # print(df_box_plot.shape)
         sns.boxplot(x='inv_kin_model', y='ae_array', hue='pause_time', data=df_box_plot, ax=bar_axs[i])
@@ -286,8 +290,9 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     # print("")
 
     # return 0
-    mae_column = []
-    ae_column = []
+    # Results are keyed by run-log index because filesystem order is not stable.
+    mae_column = pd.Series(index=df_runs.index, dtype=float)
+    ae_column = pd.Series(index=df_runs.index, dtype=object)
     drops = 0
     in_df = 0
 
@@ -318,8 +323,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             assert len(synced_pos_base) == len(targets[target_idx])
         except Exception as e:
             print("len synced_pos_base != len targets;", e)
-            mae_column.append([])
-            ae_column.append([])
+            mae_column.at[rf[1]] = np.nan
+            ae_column.at[rf[1]] = np.array([])
             continue
         abs_err_norm = np.linalg.norm(synced_pos_base - targets[target_idx], axis=1)
         corresp_idxs, corresp_error = error_by_correspondance(pos_base, targets[target_idx])
@@ -334,9 +339,9 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         #     print(f"{df_runs['inv_kin_model'][rf[1]]}, test {tests.index(df_runs['traj command'][rf[1]])+1}, pt={df_runs['pause_time'][rf[1]]}s, len: {len(pos_base)+target_len_diff}")
         #     print(f'Mean Absolute error to Target: {mae:.4f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
         #     print(f'corresp Mean Absolute error to Target: {np.mean(corresp_error):.2f}mm, {(abs_err_norm > 20).sum()} above plot limit\n')
-        mae_column.append(mae)
+        mae_column.at[rf[1]] = mae
         in_df += 1
-        ae_column.append(corresp_error)
+        ae_column.at[rf[1]] = corresp_error
 
         # scatter_axs[target_idx][model_idx].plot(*pos_base.T, label=f"pt={df_runs['pause_time'][rf[1]]}s") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         scatter_axs[model_idx].plot(*pos_base.T, label=f"Measured Trajectory") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},

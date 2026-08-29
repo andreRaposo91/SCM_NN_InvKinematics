@@ -125,17 +125,18 @@ if __name__ == "__main__":
     # cont_validation_analysis(run_folder="./cont_val/square2/", save_plot=False) # zlims=(80,130)
 
     plt.show()
-    # plt.close('all')
-    sys.exit()
+    plt.close('all')
+    # sys.exit()
 
     df_full = pd.concat((df_circle, df_coil, df_square))  #
     print(df_full.head())
-    print(df_full.groupby(['inv_kin_model', 'test'])['ae'].mean().reset_index())
+    print('mean:', df_full.groupby(['inv_kin_model', 'test'])['ae'].mean().reset_index())
     df_full = df_full.merge(df_full.groupby('test')['ae'].count().reset_index().rename({'ae': 'test_count'}, axis=1), on='test')
-    print(df_full.head())
+    # print(df_full.head())
     # weighted_average = df_full.groupby('inv_kin_model').apply(lambda x: (x['ae_array'] * x['test_count']).sum() / x['test_count'].sum())
     weighted_average = df_full.groupby('inv_kin_model').apply(lambda x: (x['ae'] * x['test_count']).sum() / x['test_count'].sum())
     print(weighted_average)
+    # sys.exit()
     fig = plt.figure(figsize=(7.7, 6.5))
     ax = fig.add_subplot()
     # sns.boxplot(x='inv_kin_model', y='ae_array', data=df_full, ax=ax, color='paleturquoise',
@@ -157,6 +158,7 @@ if __name__ == "__main__":
     new_labels = [label.get_text().replace('PCC', 'CC') for label in ax.get_xticklabels()]
     ax.set_xticklabels(new_labels)
 
+    sys.exit()
     # Histogram of errors
     fig_hist = plt.figure(figsize=(10, 6))
     ax_hist = fig_hist.add_subplot()
