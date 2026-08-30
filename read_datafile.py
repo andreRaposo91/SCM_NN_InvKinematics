@@ -130,12 +130,25 @@ if __name__ == "__main__":
 
     df_full = pd.concat((df_circle, df_coil, df_square))  #
     print(df_full.head())
-    print('mean:', df_full.groupby(['inv_kin_model', 'test'])['ae'].mean().reset_index())
-    df_full = df_full.merge(df_full.groupby('test')['ae'].count().reset_index().rename({'ae': 'test_count'}, axis=1), on='test')
-    # print(df_full.head())
-    # weighted_average = df_full.groupby('inv_kin_model').apply(lambda x: (x['ae_array'] * x['test_count']).sum() / x['test_count'].sum())
-    weighted_average = df_full.groupby('inv_kin_model').apply(lambda x: (x['ae'] * x['test_count']).sum() / x['test_count'].sum())
-    print(weighted_average)
+    path_errors = df_full.groupby(['inv_kin_model', 'test'], observed=True).agg(
+        mean_absolute_error=('ae', 'mean'),
+        point_count=('ae', 'size'),
+    )
+    print('Mean error and point count per model/path:')
+    print(path_errors)
+
+    global_average_errors = path_errors['mean_absolute_error'].groupby(
+        level='inv_kin_model', observed=True).mean()
+    print('Global average error per model (each path weighted equally):')
+    print(global_average_errors)
+
+    weighted_average_errors = (
+        (path_errors['mean_absolute_error'] * path_errors['point_count']).groupby(
+            level='inv_kin_model', observed=True).sum()
+        / path_errors['point_count'].groupby(level='inv_kin_model', observed=True).sum()
+    )
+    print('Average error per model (weighted by path point count):')
+    print(weighted_average_errors)
     # sys.exit()
     fig = plt.figure(figsize=(7.7, 6.5))
     ax = fig.add_subplot()
