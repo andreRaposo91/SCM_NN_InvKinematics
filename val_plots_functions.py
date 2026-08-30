@@ -197,7 +197,8 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
             fig.savefig(os.path.join(run_folder, filenames[i] + '.pgf'))
 
 
-def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=False, save_plot=True):
+def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=False,
+                             save_plot=True, trim_approach_points=True):
 
     global tex_plots
 
@@ -245,6 +246,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
     targets = []
     error_verts = []
+    target_start_idxs = []
+    target_lengths = []
 
     def angles(pts):
         vec1 = np.diff(pts[:-1], axis=0)
@@ -254,7 +257,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         dots = np.sum(vec1 * vec2, axis=1)
         # print(dots.shape)
         norms = (np.linalg.norm(vec1, axis=1) * np.linalg.norm(vec2, axis=1))
-        angs = np.arccos(dots / norms)
+        cosines = np.divide(dots, norms, out=np.ones_like(dots), where=norms != 0)
+        angs = np.arccos(np.clip(cosines, -1, 1))
         # print(angs.shape)
 
         return np.degrees(angs)
@@ -267,15 +271,24 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     else:
         test_nr = " 1"
     for i, t in enumerate(tests):
-        targets.append(eval(t))
-        print(f"Test {i+1}: {t}, len: {len(targets[i])} points")
+        target = eval(t)
+        sharp_corners = np.arange(1, len(target)-1)[angles(target) > 60]
+        target_start_idx = sharp_corners[0] if trim_approach_points and len(sharp_corners) else 0
+        target_lengths.append(len(target))
+        target_start_idxs.append(target_start_idx)
+        targets.append(target[target_start_idx:])
+
+        if not trim_approach_points:
+            print(f"Test {i+1}: approach-point trimming disabled; evaluating all points")
+        elif target_start_idx:
+            print(f"Test {i+1}: ignoring {target_start_idx} approach points before the first sharp corner")
+        else:
+            print(f"Test {i+1}: no sharp corner found; evaluating all points")
+        print(f"Test {i+1}: {t}, len: {len(targets[i])} evaluated points")
         # scatter_figs[i].suptitle(f"Measured Position Along Trajectory - Test: {t.split('_')[1].split('(')[0].capitalize() + test_nr}")
         # error_figs[i].suptitle(f"Absolute Error Along Trajectory - Test: {t.split('_')[1].split('(')[0].capitalize() + test_nr}")
 
-        angs = angles(targets[i])
-        # print(angs)
-        # error_verts.append(np.arange(1, len(targets[i]))[angs > (np.pi / 3)])
-        error_verts.append(np.arange(1, len(targets[i])-1)[angs > 60])
+        error_verts.append(sharp_corners[sharp_corners > target_start_idx] - target_start_idx)
         for ax in scatter_axs:
             ax.plot(*targets[i].T, label="Target", marker="*")
             # ax.scatter(*targets[i][1:-1].T, c=angs)
@@ -314,24 +327,26 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         traj, ref_T, pos, count = parse_cont_dataset(rf[0])
         _, pos_base, _ = polaris2base(traj, ref_T, pos)
 
-        target_len_diff = len(pos_base) // len(targets[target_idx])
-
-        synced_idxs = [sum(count[:i])-1 for i in range(1, len(traj)+1)]
-        synced_pos_base = pos_base[synced_idxs]
+        source_end_idxs = np.cumsum(count)
+        source_start_idx = source_end_idxs[target_start_idxs[target_idx] - 1] if target_start_idxs[target_idx] else 0
+        source_end_idx = source_end_idxs[-1]
+        synced_pos_base = pos_base[source_end_idxs - 1][target_start_idxs[target_idx]:]
         
         try:
+            assert len(traj) == target_lengths[target_idx]
+            assert source_end_idx <= len(pos_base)
             assert len(synced_pos_base) == len(targets[target_idx])
         except Exception as e:
-            print("len synced_pos_base != len targets;", e)
+            print("invalid target/sample alignment;", e)
             mae_column.at[rf[1]] = np.nan
             ae_column.at[rf[1]] = np.array([])
             continue
-        abs_err_norm = np.linalg.norm(synced_pos_base - targets[target_idx], axis=1)
+        pos_base = pos_base[source_start_idx:source_end_idx]
         corresp_idxs, corresp_error = error_by_correspondance(pos_base, targets[target_idx])
         # error_dot = [np.dot((synced_pos_base[i] - synced_pos_base[i-1])  / np.linalg.norm(synced_pos_base[i] - synced_pos_base[i-1]), synced_pos_base[i] - targets[target_idx][i]) for i in range(1, len(synced_pos_base))]
         # pos_base = synced_pos_base
         
-        mae = np.mean(abs_err_norm, where=~np.isnan(abs_err_norm))
+        mae = np.mean(corresp_error, where=~np.isnan(corresp_error))
 
         # if mae == np.nan:
         #     print(rf[0], '\n')
@@ -402,6 +417,10 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             print("no data available")
         return np.array(y)
 
+    for fig in error_figs:
+        plt.close(fig)
+    for fig in scatter_figs:
+        plt.close(fig)
 
     # print(df_runs.shape)
     # print(df_runs.iloc[17:])
@@ -437,7 +456,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             if (outside_num := df_box_plot[(df_box_plot['inv_kin_model'] == model) & (df_box_plot['ae'] > np.max(df_box_plot["ae"]) * 1.05)].shape[0]) > 0:
                 print("Values outside plot for model", model, ":", outside_num)
                 # print(melted_df[(melted_df['inv_kin_model'] == model) & (melted_df['value'] > y_lim)]) #  & (melted_df['pause_time'] == y)
-        bar_axs[i].set_ylim([0, min(np.max(df_box_plot["ae"]) * 1.05, 10)])
+        # bar_axs[i].set_ylim([0, min(np.max(df_box_plot["ae"]) * 1.05, 10)])
+        bar_axs[i].set_ylim([0, 10])
         bar_axs[i].set_title(f"Average Error for each IK Model - Test: {test.split('_')[1].split('(')[0].capitalize() + test_nr}")
         bar_axs[i].set_xlabel("Inverse Kinematics Model")
         bar_axs[i].set_ylabel("Absolute Error [mm]")

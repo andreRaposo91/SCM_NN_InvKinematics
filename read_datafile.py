@@ -171,7 +171,8 @@ if __name__ == "__main__":
     new_labels = [label.get_text().replace('PCC', 'CC') for label in ax.get_xticklabels()]
     ax.set_xticklabels(new_labels)
 
-    sys.exit()
+    # plt.show()
+    # sys.exit()
     # Histogram of errors
     fig_hist = plt.figure(figsize=(10, 6))
     ax_hist = fig_hist.add_subplot()
@@ -186,18 +187,6 @@ if __name__ == "__main__":
     # Update legend labels for consistency if needed
     if ax_hist.get_legend():
         for text in ax_hist.get_legend().get_texts():
-            text.set_text(text.get_text().replace('PCC', 'CC'))
-
-    # Stacked Histogram (less crowded overlap)
-    fig_stack = plt.figure(figsize=(10, 6))
-    ax_stack = fig_stack.add_subplot()
-    sns.histplot(data=df_full, x='ae', hue='inv_kin_model',
-                 multiple="stack", bins=50, ax=ax_stack)
-    ax_stack.set_title("Stacked Absolute Error Count by IK Model")
-    ax_stack.set_xlabel("Absolute Error [mm]")
-    ax_stack.set_xlim(0, 10)
-    if ax_stack.get_legend():
-        for text in ax_stack.get_legend().get_texts():
             text.set_text(text.get_text().replace('PCC', 'CC'))
 
     # ECDF Plot (Empirical Cumulative Distribution Function) - Cleanest for comparisons,
@@ -288,4 +277,4 @@ if __name__ == "__main__":
                     loc='upper right', bbox_to_anchor=(0.95, 0.98), fontsize=11,
                     facecolor='white', framealpha=1)
 
-    # plt.show()
+    plt.show()
