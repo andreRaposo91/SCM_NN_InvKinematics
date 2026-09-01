@@ -18,7 +18,7 @@ from point_clouds import (
     add_neighbours,
 )
 from data_functions import parse_dataset, polaris2base, parse_cont_dataset
-from val_plots_functions import parse_log
+from val_plots_functions import parse_log, angles
 from kinematics_functions import invKspace_car, len2jtheta, T_beModule, jtheta2len
 from draw_functions import draw_robot
 import asyncio
@@ -43,7 +43,7 @@ def parse_strays(stream, str_flag=True):
             pos[i] = '[' + stream[offset+i*21:offset+i*21+5] + '.' + stream[offset+i*21+5:offset+i*21+7] + ', ' \
                 + stream[offset+i*21+7:offset+i*21+12] + '.' + stream[offset+i*21+12:offset+i*21+14] + ', ' \
                 + stream[offset+i*21+14:offset+i*21+19] + '.' + stream[offset+i*21+19:offset+i*21+21] + ']'
-            
+
     return pos
     # else:
     #     pos = [[0., 0., 0.]] * num
@@ -90,7 +90,7 @@ def find_traj(run_folder, points_gen_str, model):
 
             datafile = os.path.join(run_folder, datafile)
             print(datafile)
-                    
+
             if "cont" in datafile:
                 return parse_cont_dataset(datafile)[0]
 
@@ -110,10 +110,10 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
     SETTINGS = {
         "tracker type": "polaris",
-        "serial_port": serial_port, 
+        "serial_port": serial_port,
         "romfiles" : ["./polaris/8700449.rom"],
     }
-    
+
     tracker = NDITracker(SETTINGS)
     device = tracker._device
     tracker.start_tracking()
@@ -131,7 +131,7 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
         # if any(np.isnan(tracking[0].flatten())):
         #     print("Nan in Ref Matrix", i)
         #     continue
-        
+
         try:
             async with file_lock:
                 file.write(np.array2string(tracking[0]) + '\n' + parse_strays(strays_raw.split('\n')[1])[0] + '\n')
@@ -143,7 +143,7 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
         await asyncio.sleep(0)
         # await asyncio.sleep(0.017)
-    
+
     tracker.stop_tracking()
     tracker.close()
 
@@ -154,7 +154,7 @@ async def main():
     # traj, _, _ = parse_dataset(filename)
     # dataset_type = "_" + "check"; folder = "data"; pause_time=3
     # log_run = False
-    
+
     # points_gen_str = "generate_square(16, 80, (0, 0, 100), (0, 0, 0))"; pause_time = .15; first_point_split = 12; folder="cont_val_square"
     # points_gen_str = "generate_square(8, 90, (0, 0, 100), (0, 0, 0), start_point=(0,0,125.5))"; pause_time = 0.18; folder="cont_val/cont_square"; test="square"
     # points_gen_str = "generate_square(8, 80, (0, 0, 100), (0, 0, 0))"; pause_time = 2.25; first_point_split = 2; folder="val"; test ="square"
@@ -162,27 +162,27 @@ async def main():
     # points_gen_str = "generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/square2"; test ="square"
     # # arduino stap delay: 2000
     points_gen_str = "generate_square(8, 70, (10, 0, 105), (1, 25, 45), start_point=(0, 0, 125.5, 4))"; pause_time = 0.23; folder="cont_val/cont_square2"; test ="square"
-    
+
     # points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/circle"; test="circle"
     # # arduino step delay: 2500
-    points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6))"; pause_time = 0.15; folder="cont_val/cont_circle"; test="circle"
-    
+    # points_gen_str = "generate_circle(30, 50, (0, 0, 100), (0, 0, 0), start_point=(0, 0, 125.5, 6))"; pause_time = 0.15; folder="cont_val/cont_circle"; test="circle"
+
     # points_gen_str = "generate_circle(25, 35, (0, 20, 110), (0, 45, 90), start_point=(0, 0, 125.5, 3))"; pause_time = 0.75; folder="cont_val/circle2"; test="circle"
     # # arduino step delay: 1700
     # points_gen_str = "generate_circle(25, 35, (0, 20, 110), (0, 45, 90), start_point=(0, 0, 125.5, 5))"; pause_time = 0.27; folder="cont_val/cont_circle2"; test="circle"
-    
-    # points_gen_str = "generate_circle(35, 20, (30, 35, 105), (10, 80, 45))"; pause_time = 0.2; folder="cont_val/cont_circle3"; test="circle" 
+
+    # points_gen_str = "generate_circle(35, 20, (30, 35, 105), (10, 80, 45))"; pause_time = 0.2; folder="cont_val/cont_circle3"; test="circle"
     # points_gen_str = "generate_circle(35, 20, (30, 35, 105), (10, 80, 45))"; pause_time = 0.75; folder="cont_val/circle3"; test="circle"
 
     # points_gen_str = "generate_coil(60, 14, 100, 3, starting_point=(-60, 0, 105), rotations=(0, 90, 0), starts=(0, 0, 125.5, 3), spread_xy=1.5)"; pause_time = 0.75; folder="cont_val/coil"; test="coil"
     # # arduino step delay: 2000
-    points_gen_str = "generate_coil(60, 14, 100, 3, starting_point=(-60, 0, 105), rotations=(0, 90, 0), starts=(0, 0, 125.5, 6), spread_xy=1.5)"; pause_time = 0.16; folder="cont_val/cont_coil"; test="coil"
+    # points_gen_str = "generate_coil(60, 14, 100, 3, starting_point=(-60, 0, 105), rotations=(0, 90, 0), starts=(0, 0, 125.5, 6), spread_xy=1.5)"; pause_time = 0.16; folder="cont_val/cont_coil"; test="coil"
 
     traj_points = eval(points_gen_str)
-    
+
     log_run = False
     # log_run = True
-    
+
     plot = False
     plot = True
 
@@ -200,7 +200,7 @@ async def main():
     # possible_folders = ["./cont_val/circle3", "./cont_val/cont_circle3"]
 
     # traj = np.insert(traj, 0, [traj[0] - (traj[0] - [1220, 1220, 1220]) / first_point_split * (first_point_split - i) for i in range(1, first_point_split)], axis=0)
-    
+
     if model == 'fnn3':
         if (traj := find_traj(possible_folders, points_gen_str, model)) is None:
             from inv_kin_val import fnn3_inv_kin
@@ -220,7 +220,7 @@ async def main():
         else:
             print("Found 'traj'")
         dataset_type = "_" + "inv_fnn6_" + test
-    
+
     elif model == 'rnn':
         if (traj := find_traj(possible_folders, points_gen_str, model)) is None:
             from inv_kin_val import rnn_inv_kin
@@ -241,7 +241,7 @@ async def main():
         else:
             print("Found 'traj'\n", traj[:5])
         dataset_type = "_" + "inv_fnn3-pcc_" + test
-    
+
     elif model == 'fnn6_pcc':
         if (traj := find_traj(possible_folders, points_gen_str, model)) is None:
             from inv_kin_val import fnn6_pcc_inv_kin
@@ -251,7 +251,7 @@ async def main():
         else:
             print("Found 'traj'\n", traj[:5])
         dataset_type = "_" + "inv_fnn6-pcc_" + test
-    
+
     elif model == 'rnn_pcc':
         if (traj := find_traj(possible_folders, points_gen_str, model)) is None:
             from inv_kin_val import rnn_pcc_inv_kin
@@ -276,9 +276,11 @@ async def main():
         plt.gcf().suptitle(f"Planned Trajectory - {test.capitalize()}")
         plt.gcf().add_subplot(121, projection="3d")
         draw_robot(plt.gca(), alpha_mult=0.65)
-        plt.gca().plot(*traj_points.T, marker='.')
-        plt.gca().scatter(*traj_points[0].T, label="Start", color="green")
-        plt.gca().scatter(*traj_points[-1].T, label="Finish", color="red")
+        sharp_corners = np.arange(1, len(traj_points)-1)[angles(traj_points) > 60]
+        plt_traj_points = traj_points[sharp_corners[0]:]
+        plt.gca().plot(*plt_traj_points.T, marker='.')
+        plt.gca().scatter(*plt_traj_points[0].T, label="Start", color="green")
+        plt.gca().scatter(*plt_traj_points[-1].T, label="Finish", color="red")
         plt.gca().legend()
         if test == 'coil':
             plt.xlim([-50, 50])
@@ -290,8 +292,8 @@ async def main():
         # plt.gca().plot(traj, label=['1', '2', '3'])
         # plt.gca().hlines([750, 2250], [0]*2, [len(traj)]*2, color='k', linestyle='--', label="limits")
         # plt.gca().legend(title="Servo References")
-        plt.gca().plot(pred_traj_, label=['1', '2', '3'])
-        plt.gca().hlines([86, 144], [0]*2, [len(traj)]*2, color='k', linestyle='--', label="limits")
+        plt.gca().plot(pred_traj_[sharp_corners[0]:], label=['1', '2', '3'])
+        plt.gca().hlines([86, 144], [0]*2, [len(plt_traj_points)]*2, color='k', linestyle='--', label="limits")
         plt.gca().legend(title="Flexible Rods", loc="upper right", bbox_to_anchor=(1.28, 1))
         plt.gca().set_title("Flexible Rod Lengths along trajectory")
         plt.ylabel("Flexible Rod Length [mm]")
@@ -302,9 +304,9 @@ async def main():
         # print(len(traj))
         # print(traj[:4], traj[-4:])
         plt.show()
-        exit = input("'x' for exit, nothing to continue: ") # sys.exit(0)
-        if exit == 'x':
-            sys.exit(0)
+        # exit = input("'x' for exit, nothing to continue: ") # sys.exit(0)
+        # if exit == 'x':
+        #     sys.exit(0)
     sys.exit()
 
     if any([any([True for val in np.array(traj)[:,i] if val > 2250 or val < 750]) for i in range(3)]):

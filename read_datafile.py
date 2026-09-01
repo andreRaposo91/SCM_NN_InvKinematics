@@ -111,13 +111,19 @@ if __name__ == "__main__":
     # cont_validation_analysis(run_folder="./cont_val/_circle")
     # cont_validation_analysis(run_folder="./cont_val/_cont_circle")
     # cont_validation_analysis(run_folder="./cont_val/cont_circle", save_plot=False)
-    df_circle = cont_validation_analysis(run_folder="./cont_val/cont_circle", save_plot=False)
+    df_circle = cont_validation_analysis(run_folder="./cont_val/cont_circle",
+                                         # trim_approach_points=False,
+                                         save_plot=False)
     # cont_validation_analysis(run_folder="./cont_val/cont_circle2", robot=True)
     # cont_validation_analysis(run_folder="./cont_val/cont_circle3")
     # cont_validation_analysis(run_folder="./cont_val/cont_coil", save_plot=False, robot=False)
     # cont_validation_analysis(run_folder="./cont_val/cont_square2/", save_plot=False) # zlims=(80,130)
-    df_coil = cont_validation_analysis(run_folder="./cont_val/cont_coil", save_plot=False, robot=False)
-    df_square = cont_validation_analysis(run_folder="./cont_val/cont_square2/", save_plot=False) # zlims=(80,130)
+    df_coil = cont_validation_analysis(run_folder="./cont_val/cont_coil",
+                                       # trim_approach_points=False,
+                                       save_plot=False, robot=False)
+    df_square = cont_validation_analysis(run_folder="./cont_val/cont_square2/",
+                                         # trim_approach_points=False,
+                                         save_plot=False) # zlims=(80,130)
     # cont_validation_analysis(run_folder="./cont_val/circle")
     # cont_validation_analysis(run_folder="./cont_val/circle2")
     # cont_validation_analysis(run_folder="./cont_val/circle3")
@@ -125,8 +131,8 @@ if __name__ == "__main__":
     # cont_validation_analysis(run_folder="./cont_val/square2/", save_plot=False) # zlims=(80,130)
 
     plt.show()
-    plt.close('all')
-    # sys.exit()
+    # plt.close('all')
+    sys.exit()
 
     df_full = pd.concat((df_circle, df_coil, df_square))  #
     print(df_full.head())

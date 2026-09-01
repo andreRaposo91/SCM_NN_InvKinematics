@@ -1,8 +1,6 @@
 import os, sys
 import tkinter
 from tkinter import filedialog
-import numpy as np
-import seaborn as sns
 from math import copysign, ceil
 
 tex_plots = False
@@ -15,19 +13,24 @@ if tex_plots:
         'text.usetex': True,
         'pgf.rcfonts': False,
     })
+import pandas as pd
+import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 12})
-from math import copysign
 
 from data_functions import parse_cont_dataset, polaris2base
-from kinematics_functions import T_beModule
+from kinematics_functions import T_beModule, invKspace_car
 from point_clouds import generate_square, generate_circle, generate_coil
 from draw_functions import draw_robot
 
-MODEL_ORDER = ('CC', 'FNN3', 'FNN6', 'RNN', 'FNN3-CC', 'FNN6-CC', 'RNN-CC')
+MODEL_ORDER = ('PCC', 'FNN3', 'FNN6', 'RNN', 'FNN3-CC', 'FNN6-CC', 'RNN-CC')
 
 def display_model_name(name):
     return name.split('_')[1].upper().replace('PCC', 'CC')
+
+def test_from_trajcommand(trajcommand):
+    return trajcommand.split('_')[1].split('(')[0].capitalize()
 
 def parse_log(log_filepath):
     runs = {}
@@ -49,7 +52,76 @@ def parse_log(log_filepath):
 
     return runs
 
-import pandas as pd
+def angles(pts):
+    vec1 = np.diff(pts[:-1], axis=0)
+    # print(vec1.shape)
+    vec2 = np.diff(pts[1:], axis=0)
+    # dots = np.dot(vec1, vec2, axis)
+    dots = np.sum(vec1 * vec2, axis=1)
+    # print(dots.shape)
+    norms = (np.linalg.norm(vec1, axis=1) * np.linalg.norm(vec2, axis=1))
+    cosines = np.divide(dots, norms, out=np.ones_like(dots), where=norms != 0)
+    angs = np.arccos(np.clip(cosines, -1, 1))
+    # print(angs.shape)
+
+    return np.degrees(angs)
+
+def cont_validation_plots(df_runs, tests, y_lim=10, trim_approach_points=True,
+                          plot_cable_length_derivative=True):
+    model_groups = (
+        ("PCC and NN Models", ["PCC"] + [
+            model for model in MODEL_ORDER if model != "PCC" and "-CC" not in model]),
+        ("PCC and NN-CC Models", ["PCC"] + [
+            model for model in MODEL_ORDER if model != "PCC" and "-CC" in model]),
+    )
+    figures = []
+
+    for group_title, group_models in model_groups:
+        fig, axs = plt.subplots(1, len(tests), figsize=(8 * len(tests), 6), squeeze=False)
+
+        for test_idx, test in enumerate(tests):
+            if test_idx == 0:
+                fig.suptitle(f"Absolute Error Along {test_from_trajcommand(test)} Trajectory - {group_title}")
+            ax = axs[0, test_idx]
+            test_runs = df_runs[df_runs["traj command"] == test]
+
+            for model in group_models:
+                model_runs = test_runs[test_runs["inv_kin_model"] == model]
+                for _, run in model_runs.iterrows():
+                    errors = run["ae"]
+                    if not isinstance(errors, np.ndarray) or not len(errors):
+                        continue
+                    line, = ax.plot(errors, label=model)
+                    ax.axhline(np.mean(errors), color=line.get_color(), linestyle='--', alpha=0.7)
+
+            if plot_cable_length_derivative:
+                target = eval(test)
+                sharp_corners = np.arange(1, len(target)-1)[angles(target) > 60]
+                target_start_idx = sharp_corners[0] if trim_approach_points and len(sharp_corners) else 0
+                cable_lengths = np.array([
+                    invKspace_car(*point, theta_flag=False) for point in target[target_start_idx:]
+                ])
+                average_cable_length_derivative = np.diff(np.mean(cable_lengths, axis=1))
+                derivative_ax = ax.twinx()
+                derivative_ax.plot(np.arange(len(average_cable_length_derivative)) + 0.5,
+                                   average_cable_length_derivative, color='black', linestyle=':',
+                                   label='Average cable length derivative')
+                derivative_ax.set_ylabel('Average Cable Length Derivative [mm/point]')
+                derivative_ax.legend(loc='upper right')
+
+            # ax.set_title(f"Test {test_idx + 1}")
+            ax.set_xlabel("Trajectory Points")
+            ax.set_ylabel("Absolute Error [mm]")
+            ax.grid()
+            ax.legend(loc="upper right", bbox_to_anchor=(-0.05, 1))
+            if y_lim > 0:
+                ax.set_ylim(0, y_lim)
+
+        fig.tight_layout()
+        figures.append(fig)
+
+    return figures
+
 def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=False):
 
     if run_folder == "":
@@ -76,7 +148,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
     if runs_idxs:
         print("Missing files timestamps", df_runs.loc[runs_idxs, "timestamp"])
     # sys.exit()
-    
+
     figs = [plt.figure(figsize=(6*len(tests),6))] + [plt.figure(figsize=(6*len(models),6)) for _ in range(len(tests)*2)]
     scatter_axs = [[fig.add_subplot(1, len(models), i+1, projection="3d") for i in range(len(models))] for fig in figs[1:len(tests)+1]]
     error_axs = [[fig.add_subplot(2, len(models), i+1) for i in range(len(models)*2)] for fig in figs[len(tests)+1:]]
@@ -122,7 +194,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
         abs_err_norm = np.linalg.norm(pos_base[target_len_diff:] - targets[target_idx], axis=1)
         error_dot = [np.dot((pos_base[i] - pos_base[i-target_len_diff])  / np.linalg.norm(pos_base[i] - pos_base[i-target_len_diff]), pos_base[i] - targets[target_idx][i-target_len_diff]) for i in range(target_len_diff, len(pos_base))] #  / np.linalg.norm((pos_base[i] - targets[target_idx][i-1])[i])
         pos_base = pos_base[target_len_diff:]
-        
+
         mae = np.mean(abs_err_norm, where=~np.isnan(abs_err_norm))
 
         if mae == np.nan:
@@ -140,7 +212,7 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
 
         if scatter_axs[target_idx][model_idx].get_title() == "":
             scatter_axs[target_idx][model_idx].set_title(df_runs["inv_kin_model"][rf[1]])
-        
+
         if error_axs[target_idx][model_idx].get_title() == "":
             error_axs[target_idx][model_idx].set_title(df_runs["inv_kin_model"][rf[1]])
 
@@ -198,7 +270,8 @@ def validation_analysis(run_log_path="", run_folder="", zlims=(0,0), save_plot=F
 
 
 def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=False,
-                             save_plot=True, trim_approach_points=True):
+                             save_plot=True, trim_approach_points=True,
+                             combined_error_plots=True):
 
     global tex_plots
 
@@ -219,6 +292,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     figs = []
     tests = list(dict.fromkeys(df_runs["traj command"]))
     df_runs["inv_kin_model"] = df_runs["inv_kin_model"].apply(display_model_name)
+    df_runs["inv_kin_model"] = df_runs["inv_kin_model"].replace('CC', 'PCC')
     models = [model for model in MODEL_ORDER
               if model in df_runs["inv_kin_model"].unique()]
     runs_files = [(os.path.join(run_folder, file), df_runs["timestamp"].to_list().index(file.split('_')[-1][:-4])) for file in os.listdir(run_folder) if file.split('_')[-1][:-4] in df_runs['timestamp'].to_list()]
@@ -233,7 +307,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     # figs = [plt.figure(figsize=(7*len(tests),6))] + [plt.figure(figsize=(6*len(models),6)) for _ in range(len(tests))] + [plt.figure(figsize=(6*len(models),4)) for _ in range(len(tests))]
     bar_figs = [plt.figure(figsize=(len(models)*1.15, 7)) for _ in range(len(tests))]
     scatter_figs = [plt.figure() for _ in range(len(models))]
-    error_figs = [plt.figure() for _ in range(len(models))]
+    error_figs = [] if combined_error_plots else [plt.figure() for _ in range(len(models))]
     for fig in error_figs:
         fig.tight_layout(pad=3)
     bar_axs = [fig.add_subplot(1, len(tests), i+1) for i, fig in enumerate(bar_figs)] # Add bar plot subplots
@@ -248,20 +322,6 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
     error_verts = []
     target_start_idxs = []
     target_lengths = []
-
-    def angles(pts):
-        vec1 = np.diff(pts[:-1], axis=0)
-        # print(vec1.shape)
-        vec2 = np.diff(pts[1:], axis=0)
-        # dots = np.dot(vec1, vec2, axis)
-        dots = np.sum(vec1 * vec2, axis=1)
-        # print(dots.shape)
-        norms = (np.linalg.norm(vec1, axis=1) * np.linalg.norm(vec2, axis=1))
-        cosines = np.divide(dots, norms, out=np.ones_like(dots), where=norms != 0)
-        angs = np.arccos(np.clip(cosines, -1, 1))
-        # print(angs.shape)
-
-        return np.degrees(angs)
 
     if run_folder.strip('\\/')[-1].isdigit():
         if "square" not in run_folder:
@@ -314,11 +374,9 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         distances = cdist(source_traj, target_traj, metric='euclidean')
 
         min_idxs = np.argmin(distances, axis=0)
-    
+
         return min_idxs, np.linalg.norm(source_traj[min_idxs] - target_traj, axis=1)
 
-
-    
     for i, rf in enumerate(runs_files):
         # print("file:", rf[0])
         target_idx = tests.index(df_runs["traj command"][rf[1]])
@@ -331,7 +389,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         source_start_idx = source_end_idxs[target_start_idxs[target_idx] - 1] if target_start_idxs[target_idx] else 0
         source_end_idx = source_end_idxs[-1]
         synced_pos_base = pos_base[source_end_idxs - 1][target_start_idxs[target_idx]:]
-        
+
         try:
             assert len(traj) == target_lengths[target_idx]
             assert source_end_idx <= len(pos_base)
@@ -345,7 +403,7 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         corresp_idxs, corresp_error = error_by_correspondance(pos_base, targets[target_idx])
         # error_dot = [np.dot((synced_pos_base[i] - synced_pos_base[i-1])  / np.linalg.norm(synced_pos_base[i] - synced_pos_base[i-1]), synced_pos_base[i] - targets[target_idx][i]) for i in range(1, len(synced_pos_base))]
         # pos_base = synced_pos_base
-        
+
         mae = np.mean(corresp_error, where=~np.isnan(corresp_error))
 
         # if mae == np.nan:
@@ -362,26 +420,27 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
         scatter_axs[model_idx].plot(*pos_base.T, label=f"Measured Trajectory") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         # scatter_axs[target_idx][model_idx].scatter(*synced_pos_base.T, color='k', s=8) # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         # scatter_axs[target_idx][model_idx].scatter(*pos_base[corresp_idxs].T, color='k', s=8) # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
-        
+
         # error_axs[target_idx][model_idx+len(models)].plot(error_dot, '--', label=f"error_dot_pos_diff, pt={df_runs['pause_time'][rf[1]]}s") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         # error_axs[target_idx][model_idx].plot(abs_err_norm, label=f"abs_error, pt={df_runs['pause_time'][rf[1]]}s") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         # error_axs[model_idx].plot(abs_err_norm, '--', label=f"Expected Position", alpha=0.7) # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
 
         # error_axs[target_idx][model_idx].plot(corresp_error, '--', color=error_axs[target_idx][model_idx].get_lines()[-1].get_color(), label=f"Best Correspondence Error, pt={df_runs['pause_time'][rf[1]]}s") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
         # error_axs[model_idx].plot(corresp_error, color=error_axs[model_idx].get_lines()[-1].get_color(), label=f"Best Correspondence")
-        error_axs[model_idx].plot(corresp_error, label=f"Absolute Error")
-        error_axs[model_idx].plot([np.mean(corresp_error) for _ in range(len(corresp_error))], label="Mean Error")
-        # {df_runs['inv_kin_model'][rf[1]].split('_')[1]}, # if you want pt
+        if not combined_error_plots:
+            error_axs[model_idx].plot(corresp_error, label=f"Absolute Error")
+            error_axs[model_idx].plot([np.mean(corresp_error) for _ in range(len(corresp_error))], label="Mean Error")
+            # {df_runs['inv_kin_model'][rf[1]].split('_')[1]}, # if you want pt
 
-        if len(error_verts[target_idx]) > 0:
-            error_axs[model_idx].vlines(error_verts[target_idx], [0] * len(error_verts[target_idx]), [y_lim] * len(error_verts[target_idx]),
-            color='r', linestyle='dotted', alpha=0.8, label="Sharp Corners") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
-            
+            if len(error_verts[target_idx]) > 0:
+                error_axs[model_idx].vlines(error_verts[target_idx], [0] * len(error_verts[target_idx]), [y_lim] * len(error_verts[target_idx]),
+                color='r', linestyle='dotted', alpha=0.8, label="Sharp Corners") # {df_runs['inv_kin_model'][rf[1]].split('_')[1]},
+
         if scatter_axs[model_idx].get_title() == "":
             scatter_axs[model_idx].set_title(df_runs['inv_kin_model'][rf[1]])
             # scatter_axs[target_idx][model_idx].set_title(f"Measured Position along Trajectory")
-        
-        if error_axs[model_idx].get_title() == "":
+
+        if not combined_error_plots and error_axs[model_idx].get_title() == "":
             error_axs[model_idx].set_title(df_runs['inv_kin_model'][rf[1]])
 
     # return
@@ -417,16 +476,21 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             print("no data available")
         return np.array(y)
 
-    for fig in error_figs:
-        plt.close(fig)
-    for fig in scatter_figs:
-        plt.close(fig)
+    # for fig in error_figs:
+    #     plt.close(fig)
+    # for fig in scatter_figs:
+    #     plt.close(fig)
 
     # print(df_runs.shape)
     # print(df_runs.iloc[17:])
     print("in_df", in_df, "; drops", drops)
     df_runs["mae"] = mae_column
     df_runs["ae"] = ae_column
+    if combined_error_plots:
+        combined_error_figs = cont_validation_plots(df_runs, tests, y_lim,
+                                                    trim_approach_points, True)
+    else:
+        combined_error_figs = []
     bar_width = 0.75
     print("Box Plots")
     for i, test in enumerate(tests):
@@ -458,7 +522,8 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
                 # print(melted_df[(melted_df['inv_kin_model'] == model) & (melted_df['value'] > y_lim)]) #  & (melted_df['pause_time'] == y)
         # bar_axs[i].set_ylim([0, min(np.max(df_box_plot["ae"]) * 1.05, 10)])
         bar_axs[i].set_ylim([0, 10])
-        bar_axs[i].set_title(f"Average Error for each IK Model - Test: {test.split('_')[1].split('(')[0].capitalize() + test_nr}")
+        # bar_axs[i].set_title(f"Average Error for each IK Model - Test: {test.split('_')[1].split('(')[0].capitalize() + test_nr}")
+        bar_axs[i].set_title(f"Average Error for each IK Model - Test: {test_from_trajcommand(test)}")
         bar_axs[i].set_xlabel("Inverse Kinematics Model")
         bar_axs[i].set_ylabel("Absolute Error [mm]")
         bar_axs[i].plot([], [], '--', linewidth=1, color='blue', label='Mean')
@@ -486,22 +551,25 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
 
         for i, fig in enumerate(bar_figs):
             # for label in fig.get_axes()[0].get_xticklabels():
-            new_labels = [label.get_text().replace('PCC', 'CC') for label in fig.get_axes()[0].get_xticklabels()]
-            fig.get_axes()[0].set_xticklabels(new_labels)
-            print(fig.get_axes()[0].get_xticklabels())
+            # new_labels = [label.get_text().replace('PCC', 'CC') for label in fig.get_axes()[0].get_xticklabels()]
+            # fig.get_axes()[0].set_xticklabels(new_labels)
+            # print(fig.get_axes()[0].get_xticklabels())
             # fig.get_axes()[0].set_xticklabels([label.set_text(label.get_text().replace('PCC', 'CC')) for label in fig.get_axes()[0].get_xticklabels() if 'PCC' in label])
             fig.savefig(filenames[0] + '_t' + str(i + 1) + ext)
             # fig.savefig(filenames[0] + ext)
 
         for i, fig in enumerate(scatter_figs):
-            if 'PCC' in (old_title := fig.get_axes()[0].get_title()):
-                fig.get_axes()[0].set_title(old_title.replace('PCC', 'CC'))
+            # if 'PCC' in (old_title := fig.get_axes()[0].get_title()):
+            #     fig.get_axes()[0].set_title(old_title.replace('PCC', 'CC'))
             fig.savefig(filenames[1] + '_' + fig.get_axes()[0].get_title().lower() + ext)
 
         for i, fig in enumerate(error_figs):
-            if 'PCC' in (old_title := fig.get_axes()[0].get_title()):
-                fig.get_axes()[0].set_title(old_title.replace('PCC', 'CC'))
+            # if 'PCC' in (old_title := fig.get_axes()[0].get_title()):
+            #     fig.get_axes()[0].set_title(old_title.replace('PCC', 'CC'))
             fig.savefig(filenames[2] + '_' + fig.get_axes()[0].get_title().lower() + ext)
+
+        for i, fig in enumerate(combined_error_figs):
+            fig.savefig(plots_folder + f'error-comparison_{i + 1}' + ext)
 
     # plt.close('all')
     return df_box_plot

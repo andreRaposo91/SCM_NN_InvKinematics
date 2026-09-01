@@ -32,7 +32,7 @@ def A_btSpring(la, lb, lc, w):
     R_bt = rotz(phi) @ roty(-th) @ rotz(-phi)
 
     return np.row_stack((np.column_stack((R_bt, o_bt)), [0, 0, 0, 1]))
-    
+
 
 def invKspace_cyl(r, z, phi, theta_flag=False):
     h1 = 4.2
@@ -44,7 +44,7 @@ def invKspace_cyl(r, z, phi, theta_flag=False):
 
     rad = (h1**2 - 2*h1*z + h2*h1 - h3**2 - h2*h3 + r**2 + z**2 - h2*z) / (2 * r) - \
         (h2 * (h1 - h3 - z + (h1**2 - 2*h1*h3 - 2*h1*z + h3**2 + 2*h3*z + r**2 + z**2)**0.5)) / (2*r)
-    
+
     th = 2 * np.arctan((h1 - h3 - z + (h1**2 - 2*h1*h3 - 2*h1*z + h3**2 + 2*h3*z + r**2 + z**2)**.5) / r)
 
     per = lambda ph: h1+h2+h3 + 2 * (rad + R * np.cos(ph)) * th
@@ -110,7 +110,7 @@ def T_beModule(p, base, fig, ax):
 
     if fig > 0:
         s = np.column_stack((base @ np.array([0, 0, 0, 1]),
-                         T_b0 @ np.array([0, 0, 0, 1])))       
+                         T_b0 @ np.array([0, 0, 0, 1])))
 
         for i in range(1, res + 1):
             s = np.column_stack((s, T_b0 @ (A_btSpring(i * la / res, i * lb / res, i * lc / res, R) @ np.array([0, 0, 0, 1]))))
