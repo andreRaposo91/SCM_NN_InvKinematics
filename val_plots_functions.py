@@ -101,7 +101,7 @@ def cont_validation_plots(df_runs, tests, y_lim=10, trim_approach_points=True,
                 cable_lengths = np.array([
                     invKspace_car(*point, theta_flag=False) for point in target[target_start_idx:]
                 ])
-                average_cable_length_derivative = np.diff(np.mean(cable_lengths, axis=1))
+                average_cable_length_derivative = np.mean(np.diff(cable_lengths), axis=1)
                 derivative_ax = ax.twinx()
                 derivative_ax.plot(np.arange(len(average_cable_length_derivative)) + 0.5,
                                    average_cable_length_derivative, color='black', linestyle=':',
@@ -400,6 +400,14 @@ def cont_validation_analysis(run_log_path="", run_folder="", zlims=(0,0), robot=
             ae_column.at[rf[1]] = np.array([])
             continue
         pos_base = pos_base[source_start_idx:source_end_idx]
+
+        if trim_approach_points:
+            initial_corresp_idxs, _ = error_by_correspondance(pos_base, targets[target_idx])
+            source_approach_points = initial_corresp_idxs[0]
+            if source_approach_points:
+                print(f"Ignoring {source_approach_points} tracked approach points before the named trajectory")
+                pos_base = pos_base[source_approach_points:]
+
         corresp_idxs, corresp_error = error_by_correspondance(pos_base, targets[target_idx])
         # error_dot = [np.dot((synced_pos_base[i] - synced_pos_base[i-1])  / np.linalg.norm(synced_pos_base[i] - synced_pos_base[i-1]), synced_pos_base[i] - targets[target_idx][i]) for i in range(1, len(synced_pos_base))]
         # pos_base = synced_pos_base
