@@ -68,30 +68,23 @@ def angles(pts):
 
 def cont_validation_plots(df_runs, tests, y_lim=10, trim_approach_points=True,
                           plot_cable_length_derivative=True):
-    model_groups = (
-        ("PCC and NN Models", ["PCC"] + [
-            model for model in MODEL_ORDER if model != "PCC" and "-CC" not in model]),
-        ("PCC and NN-CC Models", ["PCC"] + [
-            model for model in MODEL_ORDER if model != "PCC" and "-CC" in model]),
-    )
+    nn_models = [model for model in MODEL_ORDER if model != "PCC"]
     figures = []
 
-    for group_title, group_models in model_groups:
-        fig, axs = plt.subplots(1, len(tests), figsize=(8 * len(tests), 6), squeeze=False)
+    for test in tests:
+        fig, axs = plt.subplots(2, 3, figsize=(18, 10), squeeze=False)
+        fig.suptitle(f"Absolute Error Along {test_from_trajcommand(test)} Trajectory")
+        test_runs = df_runs[df_runs["traj command"] == test]
 
-        for test_idx, test in enumerate(tests):
-            if test_idx == 0:
-                fig.suptitle(f"Absolute Error Along {test_from_trajcommand(test)} Trajectory - {group_title}")
-            ax = axs[0, test_idx]
-            test_runs = df_runs[df_runs["traj command"] == test]
-
-            for model in group_models:
-                model_runs = test_runs[test_runs["inv_kin_model"] == model]
+        for ax, model in zip(axs.flat, nn_models):
+            # PCC is the shared baseline; each panel adds one NN variant.
+            for plotted_model in ("PCC", model):
+                model_runs = test_runs[test_runs["inv_kin_model"] == plotted_model]
                 for _, run in model_runs.iterrows():
                     errors = run["ae"]
                     if not isinstance(errors, np.ndarray) or not len(errors):
                         continue
-                    line, = ax.plot(errors, label=model)
+                    line, = ax.plot(errors, label=plotted_model)
                     ax.axhline(np.mean(errors), color=line.get_color(), linestyle='--', alpha=0.7)
 
             if plot_cable_length_derivative:
@@ -101,23 +94,25 @@ def cont_validation_plots(df_runs, tests, y_lim=10, trim_approach_points=True,
                 cable_lengths = np.array([
                     invKspace_car(*point, theta_flag=False) for point in target[target_start_idx:]
                 ])
-                average_cable_length_derivative = np.mean(np.diff(cable_lengths), axis=1)
+                cable_len_avg_derivative = np.diff(np.mean(cable_lengths, axis=1))
                 derivative_ax = ax.twinx()
-                derivative_ax.plot(np.arange(len(average_cable_length_derivative)) + 0.5,
-                                   average_cable_length_derivative, color='black', linestyle=':',
-                                   label='Average cable length derivative')
-                derivative_ax.set_ylabel('Average Cable Length Derivative [mm/point]')
-                derivative_ax.legend(loc='upper right')
+                x = np.arange(len(cable_len_avg_derivative)) + 0.5
+                derivative_ax.plot(x, cable_len_avg_derivative, color='black', linestyle=':',
+                                   label='Mean Derivative of Flexible Rod lenghts')
+                derivative_ax.set_ylabel('Flexible Rod Length Derivative [mm/point]')
+                derivative_ax.set_ylim(-7, 7)
+                if model == 'RNN':  # top right plot
+                    derivative_ax.legend(loc='lower left', bbox_to_anchor=(0.65, 1.05))
 
-            # ax.set_title(f"Test {test_idx + 1}")
+            ax.set_title(model)
             ax.set_xlabel("Trajectory Points")
             ax.set_ylabel("Absolute Error [mm]")
             ax.grid()
-            ax.legend(loc="upper right", bbox_to_anchor=(-0.05, 1))
+            ax.legend(loc="upper left")
             if y_lim > 0:
                 ax.set_ylim(0, y_lim)
 
-        fig.tight_layout()
+        fig.tight_layout(rect=(0, 0, 1, 0.96))
         figures.append(fig)
 
     return figures
