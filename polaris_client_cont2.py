@@ -188,7 +188,7 @@ async def main():
 
     model = 'pcc'
     # model = 'fnn3'
-    # model = 'fnn6'
+    model = 'fnn6'
     # model = 'rnn'
     # model = 'fnn3_pcc'
     # model = 'fnn6_pcc'
@@ -304,10 +304,9 @@ async def main():
         # print(len(traj))
         # print(traj[:4], traj[-4:])
         plt.show()
-        # exit = input("'x' for exit, nothing to continue: ") # sys.exit(0)
-        # if exit == 'x':
-        #     sys.exit(0)
-    sys.exit()
+        exit = input("'x' for exit, nothing to continue: ") # sys.exit(0)
+        if exit == 'x':
+            sys.exit(0)
 
     if any([any([True for val in np.array(traj)[:,i] if val > 2250 or val < 750]) for i in range(3)]):
         sys.exit("Error: Reference out of Bounds")

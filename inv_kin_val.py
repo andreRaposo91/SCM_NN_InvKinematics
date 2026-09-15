@@ -3,7 +3,7 @@ import time
 
 from kinematics_functions import invKspace_car, jtheta2len, len2jtheta
 from data_functions import parse_dataset, polaris2base
-from keras.models import load_model
+from keras_compat import load_model
 
 def data_norm(data, comp=False):
     length = len(data[0])
@@ -37,7 +37,7 @@ def fnn6_inv_kin(pts, model_file="", norm=True):
     if model.input_shape[1] != 6:
         print("Incorrect Model Type")
         return None
-    
+
     pos_diff = np.diff(pts, axis=0)
     pos_diff = np.insert(pos_diff / np.linalg.norm(pos_diff, axis=1, keepdims=True), 0, np.zeros((1, 3)), axis=0)
     pts_w_diff = np.concatenate((pts, pos_diff), axis=1)
@@ -70,7 +70,7 @@ def fnn6_pcc_inv_kin(pts, model_file="", norm=True):
     if model.input_shape[1] != 6:
         print("Incorrect Model Type")
         return None
-    
+
     pcc_est = [invKspace_car(*p, theta_flag=False) for p in pts]
     pos_diff = np.diff(pcc_est, axis=0) # not really pos_diff, more like pcc diff
     pos_diff = np.insert(pos_diff / np.linalg.norm(pos_diff, axis=1, keepdims=True), 0, np.zeros((1, 3)), axis=0)
@@ -88,7 +88,7 @@ def rnn_inv_kin(pts, model_file="", norm=False):
     if len(model.input_shape) != 3 or model.input_shape[2] != 3:
         print("Incorrect Model Type")
         return None
-    
+
     num_time_steps = model.input_shape[1]
     if norm: pts = data_norm(pts)
     pts_rnn = np.array([tuple(pts[i:i+num_time_steps,:]) for i in range(0, len(pts) - num_time_steps + 1)])
@@ -112,7 +112,7 @@ def rnn_pcc_inv_kin(pts, model_file="", norm=False):
     if len(model.input_shape) != 3 or model.input_shape[2] != 3:
         print("Incorrect Model Type")
         return None
-    
+
     num_time_steps = model.input_shape[1]
     if norm: pcc_est = data_norm(pcc_est, comp=True)
     pts_rnn = np.array([tuple(pcc_est[i:i+num_time_steps,:]) for i in range(0, len(pts) - num_time_steps + 1)])
@@ -125,7 +125,7 @@ def rnn_pcc_inv_kin(pts, model_file="", norm=False):
         raise AssertionError(f"{len(pts)} | {len(pts_rnn)}")
 
     return model.predict(pts_rnn)
-    
+
 # if __name__ == "__main__":
 #     datasets = [
 #         "./data/dataset_1200_2023-12-13T161233.txt",
