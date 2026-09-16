@@ -1,24 +1,34 @@
 # Build in 64-bit Windows PowerShell. The output is
 # dist\windows\polaris_client_cont2.exe. Requires the
-# Python 3.9 launcher; set $Python to another Python 3.9 executable (and
-# $PythonArgs to @()) if needed.
+# Python 3.9+ is required. The script prefers the Windows ``py`` launcher,
+# but also works when only ``python`` is on PATH.
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
 
-$Python = 'py'
-$PythonArgs = @('-3.9')
-$buildVenv = '.polaris-build-venv'
+$pyLauncher = Get-Command py -ErrorAction SilentlyContinue
+if ($null -ne $pyLauncher) {
+    $pythonExecutable = 'py'
+    $pythonArgs = @('-3.9')
+} else {
+    $pythonExecutable = 'python'
+    # ``-3.9`` is a py-launcher option, not a python.exe option.
+    $pythonArgs = @()
+}
+
+$buildVenv = Join-Path $repoRoot '.polaris-build-venv'
 $env:PIP_CACHE_DIR = (Join-Path $repoRoot '.polaris-pip-cache')
 $env:PYINSTALLER_CONFIG_DIR = (Join-Path $repoRoot '.polaris-pyinstaller-cache')
 
-& $Python @PythonArgs -m venv $buildVenv
-& "$buildVenv\Scripts\python.exe" -m pip install --disable-pip-version-check --only-binary=:all: `
+& $pythonExecutable @pythonArgs --version
+& $pythonExecutable @pythonArgs -m venv $buildVenv
+$venvPython = Join-Path $buildVenv 'Scripts\python.exe'
+& $venvPython -m pip install --disable-pip-version-check --only-binary=:all: `
     'tensorflow==2.13.1' 'keras==2.13.1' 'h5py>=3.8' `
     'numpy>=1.24,<1.25' 'pandas>=2.0' 'scipy>=1.10' `
     'matplotlib>=3.7' 'seaborn>=0.13' 'pyserial==3.5' `
     'pyinstaller>=6.5,<7'
-& "$buildVenv\Scripts\python.exe" -m PyInstaller `
+& $venvPython -m PyInstaller `
     --noconfirm --clean `
     --distpath dist/windows `
     --workpath build/windows `
