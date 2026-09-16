@@ -8,6 +8,9 @@ wheels/
 
 # Virtual environments
 .venv/
+.polaris-build-venv/
+.polaris-pip-cache/
+.polaris-pyinstaller-cache/
 
 .ipynb_checkpoints/
 .vscode/

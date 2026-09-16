@@ -1,4 +1,5 @@
 from math import ceil
+import argparse
 import time, datetime, sys, os
 from pandas._libs.tslibs import timestamps
 import serial
@@ -21,6 +22,7 @@ from data_functions import parse_dataset, polaris2base, parse_cont_dataset
 from val_plots_functions import parse_log, angles
 from kinematics_functions import invKspace_car, len2jtheta, T_beModule, jtheta2len
 from draw_functions import draw_robot
+from runtime_paths import bundled_path
 import asyncio
 
 # import matplotlib
@@ -28,6 +30,127 @@ import asyncio
 # matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 # matplotlib.use("TKAgg", force=True)
 import matplotlib.pyplot as plt
+
+
+MODEL_CHOICES = {
+    "1": ("pcc", "PCC analytical baseline"),
+    "2": ("fnn3", "FNN: Cartesian position"),
+    "3": ("fnn6", "FNN: position and direction"),
+    "4": ("rnn", "RNN: Cartesian position"),
+    "5": ("fnn3_pcc", "FNN: PCC estimate"),
+    "6": ("fnn6_pcc", "FNN: PCC estimate and direction"),
+    "7": ("rnn_pcc", "RNN: PCC estimate"),
+}
+TRAJECTORY_CHOICES = {"1": "square", "2": "circle", "3": "coil"}
+
+
+def prompt_value(label, default, convert=str):
+    """Read one value, retaining the supplied default when input is blank."""
+    while True:
+        response = input(f"{label} [{default}]: ").strip()
+        if not response:
+            return default
+        try:
+            return convert(response)
+        except ValueError:
+            print("Invalid value; please try again.")
+
+
+def prompt_vector(label, default):
+    default_text = ", ".join(str(value) for value in default)
+    while True:
+        response = input(f"{label} ({default_text}): ").strip()
+        if not response:
+            return tuple(default)
+        try:
+            values = tuple(float(value.strip()) for value in response.split(","))
+            if len(values) == 3:
+                return values
+        except ValueError:
+            pass
+        print("Enter exactly three comma-separated numbers, for example: 0, 0, 125.5")
+
+
+def prompt_choice(title, choices, default):
+    print(f"\n{title}")
+    for key, value in choices.items():
+        label = value[1] if isinstance(value, tuple) else value
+        print(f"  {key}. {label}")
+    while True:
+        response = input(f"Selection [{default}]: ").strip() or default
+        if response in choices:
+            value = choices[response]
+            return value[0] if isinstance(value, tuple) else value
+        print("Choose one of the listed numbers.")
+
+
+def prompt_yes_no(label, default=False):
+    suffix = "Y/n" if default else "y/N"
+    response = input(f"{label} [{suffix}]: ").strip().lower()
+    if not response:
+        return default
+    return response in {"y", "yes"}
+
+
+def build_trajectory(kind):
+    """Prompt for trajectory geometry and return points plus a log description."""
+    if kind == "square":
+        count = prompt_value("Points per side", 8, int)
+        size = prompt_value("Side length (mm)", 70.0, float)
+        center = prompt_vector("Centre (x, y, z) mm", (10, 0, 105))
+        rotations = prompt_vector("Rotation (x, y, z) degrees", (1, 25, 45))
+        start = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
+        approach_steps = prompt_value("Approach steps", 4, int)
+        points = generate_square(count, size, center, rotations, (*start, approach_steps))
+        description = f"generate_square({count}, {size}, {center}, {rotations}, start_point={(*start, approach_steps)})"
+    elif kind == "circle":
+        count = prompt_value("Number of points", 30, int)
+        radius = prompt_value("Radius (mm)", 50.0, float)
+        center = prompt_vector("Centre (x, y, z) mm", (0, 0, 100))
+        rotations = prompt_vector("Rotation (x, y, z) degrees", (0, 0, 0))
+        start = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
+        approach_steps = prompt_value("Approach steps", 4, int)
+        points = generate_circle(count, radius, center, rotations, (*start, approach_steps))
+        description = f"generate_circle({count}, {radius}, {center}, {rotations}, start_point={(*start, approach_steps)})"
+    else:
+        count = prompt_value("Number of points", 60, int)
+        radius = prompt_value("Radius (mm)", 14.0, float)
+        height = prompt_value("Height (mm)", 100.0, float)
+        turns = prompt_value("Number of turns", 3.0, float)
+        start_point = prompt_vector("Coil start (x, y, z) mm", (-60, 0, 105))
+        rotations = prompt_vector("Rotation (x, y, z) degrees", (0, 90, 0))
+        approach = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
+        approach_steps = prompt_value("Approach steps", 4, int)
+        spread = prompt_value("XY spread multiplier", 1.5, float)
+        points = generate_coil(count, radius, height, turns, start_point, rotations, (*approach, approach_steps), spread)
+        description = f"generate_coil({count}, {radius}, {height}, {turns}, starting_point={start_point}, rotations={rotations})"
+
+    if len(points) < 2:
+        raise ValueError("A trajectory must contain at least two points.")
+    return points, description
+
+
+def interactive_configuration():
+    parser = argparse.ArgumentParser(description="Plan and execute a Polaris continuous trajectory.")
+    parser.add_argument("--model", choices=[value[0] for value in MODEL_CHOICES.values()])
+    parser.add_argument("--trajectory", choices=TRAJECTORY_CHOICES.values())
+    parser.add_argument("--no-plot", action="store_true", help="Skip the trajectory preview window.")
+    parser.add_argument("--send", action="store_true", help="Preselect sending commands; confirmation is still required.")
+    parser.add_argument("--robot-port", default=None, help="Robot serial port, e.g. COM5 or /dev/ttyUSB0.")
+    parser.add_argument("--output-dir", default=None, help="Directory for recorded run data.")
+    args = parser.parse_args()
+
+    model = args.model or prompt_choice("Inverse-kinematics model", MODEL_CHOICES, "3")
+    trajectory = args.trajectory or prompt_choice("Trajectory", TRAJECTORY_CHOICES, "1")
+    points, description = build_trajectory(trajectory)
+    pause_time = prompt_value("Pause between commands (seconds)", 0.23, float)
+    folder = args.output_dir or prompt_value("Output folder", f"cont_val/{trajectory}")
+    plot = not args.no_plot and prompt_yes_no("Preview the planned trajectory", True)
+    send = prompt_yes_no("Send this trajectory to the robot", args.send)
+    robot_port = args.robot_port or prompt_value("Robot serial port", "COM5") if send else None
+    record_tracking = prompt_yes_no("Record Polaris tracking data", False) if send else False
+    tracker_port = prompt_value("Polaris serial port", "COM6") if record_tracking else None
+    return model, trajectory, points, description, pause_time, folder, plot, send, robot_port, record_tracking, tracker_port
 
 def parse_strays(stream, str_flag=True):
     num = int(stream[0:2], 16)
@@ -108,10 +231,19 @@ def find_traj(run_folder, points_gen_str, model):
 async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6"):
     global in_traj, count
 
+    try:
+        from sksurgerynditracker.nditracker import NDITracker
+        import ndicapy
+    except ImportError as error:
+        raise RuntimeError(
+            "Polaris recording requires sksurgerynditracker and ndicapy. "
+            "Install/package them before enabling tracking."
+        ) from error
+
     SETTINGS = {
         "tracker type": "polaris",
         "serial_port": serial_port,
-        "romfiles" : ["./polaris/8700449.rom"],
+        "romfiles" : [str(bundled_path("polaris/8700449.rom"))],
     }
 
     tracker = NDITracker(SETTINGS)
@@ -149,6 +281,8 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
 async def main():
     global in_traj, count
+
+    """Legacy fixed trajectory configurations retained for reference.
 
     # filename = "./data/dataset_10_check_2024-01-17T160944.txt"
     # traj, _, _ = parse_dataset(filename)
@@ -199,7 +333,11 @@ async def main():
     possible_folders = folder
     # possible_folders = ["./cont_val/circle3", "./cont_val/cont_circle3"]
 
-    # traj = np.insert(traj, 0, [traj[0] - (traj[0] - [1220, 1220, 1220]) / first_point_split * (first_point_split - i) for i in range(1, first_point_split)], axis=0)
+    """
+
+    model, test, traj_points, points_gen_str, pause_time, folder, plot, send, robot_port, record_tracking, tracker_port = interactive_configuration()
+    log_run = True
+    possible_folders = folder
 
     if model == 'fnn3':
         if (traj := find_traj(possible_folders, points_gen_str, model)) is None:
@@ -277,7 +415,8 @@ async def main():
         plt.gcf().add_subplot(121, projection="3d")
         draw_robot(plt.gca(), alpha_mult=0.65)
         sharp_corners = np.arange(1, len(traj_points)-1)[angles(traj_points) > 60]
-        plt_traj_points = traj_points[sharp_corners[0]:]
+        plot_start = sharp_corners[0] if len(sharp_corners) else 0
+        plt_traj_points = traj_points[plot_start:]
         plt.gca().plot(*plt_traj_points.T, marker='.')
         plt.gca().scatter(*plt_traj_points[0].T, label="Start", color="green")
         plt.gca().scatter(*plt_traj_points[-1].T, label="Finish", color="red")
@@ -292,7 +431,7 @@ async def main():
         # plt.gca().plot(traj, label=['1', '2', '3'])
         # plt.gca().hlines([750, 2250], [0]*2, [len(traj)]*2, color='k', linestyle='--', label="limits")
         # plt.gca().legend(title="Servo References")
-        plt.gca().plot(pred_traj_[sharp_corners[0]:], label=['1', '2', '3'])
+        plt.gca().plot(pred_traj_[plot_start:], label=['1', '2', '3'])
         plt.gca().hlines([86, 144], [0]*2, [len(plt_traj_points)]*2, color='k', linestyle='--', label="limits")
         plt.gca().legend(title="Flexible Rods", loc="upper right", bbox_to_anchor=(1.28, 1))
         plt.gca().set_title("Flexible Rod Lengths along trajectory")
@@ -311,17 +450,21 @@ async def main():
     if any([any([True for val in np.array(traj)[:,i] if val > 2250 or val < 750]) for i in range(3)]):
         sys.exit("Error: Reference out of Bounds")
 
+    print(f"\nPlanned {len(traj)} robot commands using {model} for a {test} trajectory.")
+    if not send:
+        print("Dry run complete: no serial ports were opened and no commands were sent.")
+        return
+
     dt = datetime.datetime.now(datetime.timezone.utc).isoformat().split('.')[0].replace(':', '')
 
-    if not os.path.exists(folder):
-        os.mkdir(folder)
+    os.makedirs(folder, exist_ok=True)
     file = open(f'./{folder}/cont_dataset_{len(traj)}{dataset_type}_{dt}.txt', 'w')
     print(f'./{folder}/cont_dataset_{len(traj)}{dataset_type}_{dt}.txt')
 
     # capture_mask = [True] * len(traj)
 
     robot = serial.Serial()
-    robot.port = "COM5"
+    robot.port = robot_port
     robot.baudrate = 9600
     robot.open()
 
@@ -336,7 +479,9 @@ async def main():
     tracker_connecting = asyncio.Event()
     count = 0
 
-    track_task = asyncio.create_task(polaris_track(file, file_lock, tracker_connecting))
+    track_task = None
+    if record_tracking:
+        track_task = asyncio.create_task(polaris_track(file, file_lock, tracker_connecting, tracker_port))
 
     await asyncio.sleep(0)  # Ensure the event loop starts processing tasks
 
@@ -357,6 +502,8 @@ async def main():
 
     await asyncio.sleep(pause_time)
     in_traj = False
+    if track_task is not None:
+        await track_task
     elapsed_time = time.time() - start_time
     robot.write("1220, 1220, 1220\n".encode())
     print("Homing.")

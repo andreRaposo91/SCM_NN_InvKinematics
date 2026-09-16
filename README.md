@@ -41,3 +41,40 @@ tracker, ROM file, and the relevant tracker/serial Python packages.
 The file names encode the acquisition or test type and timestamp; commented examples in
 `read_datafile.py` and `polaris_client.py` document the available experimental
 configurations.
+# Packaging the Polaris client
+
+Build the application on the operating system where it will run. The recipes
+do not use `uv`: each creates a repository-local `.polaris-build-venv`, installs
+the build dependencies there, and produces one executable. The executable
+contains the Python runtime, so its user does not need Python or a virtual
+environment.
+
+Linux (x86_64):
+
+```bash
+bash scripts/build-polaris-linux.sh
+./dist/linux/polaris_client_cont2
+```
+
+Windows (64-bit PowerShell):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\build-polaris-windows.ps1
+.\dist\windows\polaris_client_cont2.exe
+```
+
+Each package includes the six default inverse-kinematics models selected by
+`polaris_client_cont2.py`, both normalization files, and the Polaris ROM file.
+On start, it prompts for a model, square/circle/coil geometry, output location,
+preview, and whether to send robot commands. Sending defaults to **No**, so a
+trajectory can be checked without opening a serial port. `--model`,
+`--trajectory`, `--no-plot`, `--send`, `--robot-port`, and `--output-dir` are
+also available for partially scripted invocation.
+
+The `.keras` model archives are copied as-is; `keras_compat.py` loads their
+Windows-style weight layout at inference time. TensorFlow/PyInstaller binaries
+are platform-specific, so a Windows executable must be built on Windows and a
+Linux executable on Linux. Building requires an installed 64-bit Python 3.9;
+running the resulting executable does not. A single-file PyInstaller executable
+extracts its bundled TensorFlow runtime and models into a temporary directory
+while it runs; it does not alter the original model archives.

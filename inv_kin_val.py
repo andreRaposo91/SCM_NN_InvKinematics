@@ -4,18 +4,19 @@ import time
 from kinematics_functions import invKspace_car, jtheta2len, len2jtheta
 from data_functions import parse_dataset, polaris2base
 from keras_compat import load_model
+from runtime_paths import bundled_path
 
 def data_norm(data, comp=False):
     length = len(data[0])
-    if comp: min_max_values = np.load('data_norm_w-diff_comp.npz')
-    else: min_max_values = np.load('data_norm_w-diff.npz')
+    if comp: min_max_values = np.load(bundled_path('data_norm_w-diff_comp.npz'))
+    else: min_max_values = np.load(bundled_path('data_norm_w-diff.npz'))
     min_values = min_max_values['min_values'][:length]
     max_values = min_max_values['max_values'][:length]
     return (data - min_values) / (max_values - min_values)
 
 def fnn3_inv_kin(pts, model_file="", norm=True):
     if model_file == "":
-        model_file = "./results/final_datasets3/models_2024-03-26T112415/mlp_1_62pct_3L_70.keras"
+        model_file = bundled_path("results/final_datasets3/models_2024-03-26T112415/mlp_1_62pct_3L_70.keras")
 
     model = load_model(model_file)
     if model.input_shape[1] != 3:
@@ -31,7 +32,7 @@ def fnn3_inv_kin(pts, model_file="", norm=True):
 
 def fnn6_inv_kin(pts, model_file="", norm=True):
     if model_file == "":
-        model_file = "./results/final_datasets3/models_2024-04-09T130207/mlp_1_62pct_2L_80.keras"
+        model_file = bundled_path("results/final_datasets3/models_2024-04-09T130207/mlp_1_62pct_2L_80.keras")
 
     model = load_model(model_file)
     if model.input_shape[1] != 6:
@@ -49,7 +50,7 @@ def fnn6_inv_kin(pts, model_file="", norm=True):
 def fnn3_pcc_inv_kin(pts, model_file="", norm=True):
     if model_file == "":
         # model_file = "./results/final_datasets_comp/models_2024-04-30T233236/mlp_1_100pct_3L_50.keras"
-        model_file = "./results/final_datasets_comp/models_2024-06-07T102829/mlp_1_87pct_4L_75.keras"
+        model_file = bundled_path("results/final_datasets_comp/models_2024-06-07T102829/mlp_1_87pct_4L_75.keras")
 
 
     model = load_model(model_file)
@@ -64,7 +65,7 @@ def fnn3_pcc_inv_kin(pts, model_file="", norm=True):
 def fnn6_pcc_inv_kin(pts, model_file="", norm=True):
     if model_file == "":
         # model_file = "./results/final_datasets_comp/models_2024-05-03T110939/mlp_1_75pct_4L_80.keras"
-        model_file = "./results/final_datasets_comp/models_2024-06-06T121224/mlp_1_87pct_4L_70.keras"
+        model_file = bundled_path("results/final_datasets_comp/models_2024-06-06T121224/mlp_1_87pct_4L_70.keras")
 
     model = load_model(model_file)
     if model.input_shape[1] != 6:
@@ -82,7 +83,7 @@ def fnn6_pcc_inv_kin(pts, model_file="", norm=True):
 
 def rnn_inv_kin(pts, model_file="", norm=False):
     if model_file == "":
-        model_file = "./results/final_datasets_rnn/models_2024-04-03T155223/rnn_100pct_2L_70.keras"
+        model_file = bundled_path("results/final_datasets_rnn/models_2024-04-03T155223/rnn_100pct_2L_70.keras")
 
     model = load_model(model_file)
     if len(model.input_shape) != 3 or model.input_shape[2] != 3:
@@ -103,7 +104,7 @@ def rnn_inv_kin(pts, model_file="", norm=False):
 def rnn_pcc_inv_kin(pts, model_file="", norm=False):
     if model_file == "":
         # model_file = "./results/final_datasets_rnn_comp/models_2024-05-07T105044/rnn_75pct_3L_50.keras"
-        model_file = "./results/final_datasets_rnn_comp/models_2024-06-11T204342/rnn_25pct_2L_70.keras"
+        model_file = bundled_path("results/final_datasets_rnn_comp/models_2024-06-11T204342/rnn_25pct_2L_70.keras")
 
     # print(pts[:5])
     pcc_est = np.array([invKspace_car(*p, theta_flag=False) for p in pts])
