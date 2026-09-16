@@ -28,7 +28,7 @@ if missing:
 # Preserve each resource's repository-relative path.  runtime_paths.bundled_path
 # uses precisely this layout in both source and frozen execution.
 datas = [(str(ROOT / path), str(Path(path).parent)) for path in RESOURCE_FILES]
-binaries, extra_datas, hiddenimports = [], [], ["inv_kin_val"]
+binaries, extra_datas, hiddenimports = [], [], ["inv_kin_val", "matplotlib.backends.backend_tkagg"]
 # Keras is imported directly by keras_compat.py and PyInstaller's normal module
 # analysis includes it. Recursively importing every Keras submodule can crash
 # PyInstaller's isolated scanner under TensorFlow 2.13.

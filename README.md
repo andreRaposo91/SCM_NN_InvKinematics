@@ -65,10 +65,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-polaris-windows.ps1
 
 Each package includes the six default inverse-kinematics models selected by
 `polaris_client_cont2.py`, both normalization files, and the Polaris ROM file.
-On start, it prompts for a model, square/circle/coil geometry, output location,
-preview, and whether to send robot commands. Sending defaults to **No**, so a
+On start, it prompts for a model and square/circle/coil trajectory, then offers
+to use that trajectory's default arguments before asking for individual geometry
+values. It then asks for the output location, preview, and whether to send robot
+commands. Sending defaults to **No**, so a
 trajectory can be checked without opening a serial port. `--model`,
-`--trajectory`, `--no-plot`, `--send`, `--robot-port`, and `--output-dir` are
+`--trajectory`, `--default-trajectory`, `--no-plot`, `--send`, `--robot-port`, and `--output-dir` are
 also available for partially scripted invocation.
 
 The `.keras` model archives are copied as-is; `keras_compat.py` loads their
