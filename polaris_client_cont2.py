@@ -25,10 +25,16 @@ from draw_functions import draw_robot
 from runtime_paths import bundled_path
 import asyncio
 
-# import matplotlib
-# # print(matplotlib.get_backend())
-# matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-# matplotlib.use("TKAgg", force=True)
+import matplotlib
+# A PyInstaller build otherwise defaults to the non-interactive Agg backend,
+# which cannot open the trajectory preview window. Importing tkinter also lets
+# PyInstaller detect and ship Tcl/Tk with the Windows executable.
+if sys.platform == "win32":
+    try:
+        import tkinter  # noqa: F401
+        matplotlib.use("TkAgg")
+    except ImportError:
+        matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
@@ -92,36 +98,48 @@ def prompt_yes_no(label, default=False):
     return response in {"y", "yes"}
 
 
-def build_trajectory(kind):
+def build_trajectory(kind, use_defaults=False):
     """Prompt for trajectory geometry and return points plus a log description."""
+    defaults = {
+        "square": (8, 70.0, (10, 0, 105), (1, 25, 45), (0, 0, 125.5), 4),
+        "circle": (30, 50.0, (0, 0, 100), (0, 0, 0), (0, 0, 125.5), 4),
+        "coil": (60, 14.0, 100.0, 3.0, (-60, 0, 105), (0, 90, 0), (0, 0, 125.5), 4, 1.5),
+    }
+
     if kind == "square":
-        count = prompt_value("Points per side", 8, int)
-        size = prompt_value("Side length (mm)", 70.0, float)
-        center = prompt_vector("Centre (x, y, z) mm", (10, 0, 105))
-        rotations = prompt_vector("Rotation (x, y, z) degrees", (1, 25, 45))
-        start = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
-        approach_steps = prompt_value("Approach steps", 4, int)
+        count, size, center, rotations, start, approach_steps = defaults[kind]
+        if not use_defaults:
+            count = prompt_value("Points per side", count, int)
+            size = prompt_value("Side length (mm)", size, float)
+            center = prompt_vector("Centre (x, y, z) mm", center)
+            rotations = prompt_vector("Rotation (x, y, z) degrees", rotations)
+            start = prompt_vector("Approach start (x, y, z) mm", start)
+            approach_steps = prompt_value("Approach steps", approach_steps, int)
         points = generate_square(count, size, center, rotations, (*start, approach_steps))
         description = f"generate_square({count}, {size}, {center}, {rotations}, start_point={(*start, approach_steps)})"
     elif kind == "circle":
-        count = prompt_value("Number of points", 30, int)
-        radius = prompt_value("Radius (mm)", 50.0, float)
-        center = prompt_vector("Centre (x, y, z) mm", (0, 0, 100))
-        rotations = prompt_vector("Rotation (x, y, z) degrees", (0, 0, 0))
-        start = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
-        approach_steps = prompt_value("Approach steps", 4, int)
+        count, radius, center, rotations, start, approach_steps = defaults[kind]
+        if not use_defaults:
+            count = prompt_value("Number of points", count, int)
+            radius = prompt_value("Radius (mm)", radius, float)
+            center = prompt_vector("Centre (x, y, z) mm", center)
+            rotations = prompt_vector("Rotation (x, y, z) degrees", rotations)
+            start = prompt_vector("Approach start (x, y, z) mm", start)
+            approach_steps = prompt_value("Approach steps", approach_steps, int)
         points = generate_circle(count, radius, center, rotations, (*start, approach_steps))
         description = f"generate_circle({count}, {radius}, {center}, {rotations}, start_point={(*start, approach_steps)})"
     else:
-        count = prompt_value("Number of points", 60, int)
-        radius = prompt_value("Radius (mm)", 14.0, float)
-        height = prompt_value("Height (mm)", 100.0, float)
-        turns = prompt_value("Number of turns", 3.0, float)
-        start_point = prompt_vector("Coil start (x, y, z) mm", (-60, 0, 105))
-        rotations = prompt_vector("Rotation (x, y, z) degrees", (0, 90, 0))
-        approach = prompt_vector("Approach start (x, y, z) mm", (0, 0, 125.5))
-        approach_steps = prompt_value("Approach steps", 4, int)
-        spread = prompt_value("XY spread multiplier", 1.5, float)
+        count, radius, height, turns, start_point, rotations, approach, approach_steps, spread = defaults[kind]
+        if not use_defaults:
+            count = prompt_value("Number of points", count, int)
+            radius = prompt_value("Radius (mm)", radius, float)
+            height = prompt_value("Height (mm)", height, float)
+            turns = prompt_value("Number of turns", turns, float)
+            start_point = prompt_vector("Coil start (x, y, z) mm", start_point)
+            rotations = prompt_vector("Rotation (x, y, z) degrees", rotations)
+            approach = prompt_vector("Approach start (x, y, z) mm", approach)
+            approach_steps = prompt_value("Approach steps", approach_steps, int)
+            spread = prompt_value("XY spread multiplier", spread, float)
         points = generate_coil(count, radius, height, turns, start_point, rotations, (*approach, approach_steps), spread)
         description = f"generate_coil({count}, {radius}, {height}, {turns}, starting_point={start_point}, rotations={rotations})"
 
@@ -134,6 +152,7 @@ def interactive_configuration():
     parser = argparse.ArgumentParser(description="Plan and execute a Polaris continuous trajectory.")
     parser.add_argument("--model", choices=[value[0] for value in MODEL_CHOICES.values()])
     parser.add_argument("--trajectory", choices=TRAJECTORY_CHOICES.values())
+    parser.add_argument("--default-trajectory", action="store_true", help="Use the selected trajectory's default geometry.")
     parser.add_argument("--no-plot", action="store_true", help="Skip the trajectory preview window.")
     parser.add_argument("--send", action="store_true", help="Preselect sending commands; confirmation is still required.")
     parser.add_argument("--robot-port", default=None, help="Robot serial port, e.g. COM5 or /dev/ttyUSB0.")
@@ -142,7 +161,8 @@ def interactive_configuration():
 
     model = args.model or prompt_choice("Inverse-kinematics model", MODEL_CHOICES, "3")
     trajectory = args.trajectory or prompt_choice("Trajectory", TRAJECTORY_CHOICES, "1")
-    points, description = build_trajectory(trajectory)
+    use_defaults = args.default_trajectory or prompt_yes_no("Use the default trajectory arguments", True)
+    points, description = build_trajectory(trajectory, use_defaults)
     pause_time = prompt_value("Pause between commands (seconds)", 0.23, float)
     folder = args.output_dir or prompt_value("Output folder", f"cont_val/{trajectory}")
     plot = not args.no_plot and prompt_yes_no("Preview the planned trajectory", True)
@@ -408,6 +428,10 @@ async def main():
         # # traj = np.insert(traj, 0, [1220, 1220, 1220], axis=0)
         # print("avg ref err:", sum(np.sum(np.abs(og_traj - traj), axis=0) / len(traj)) / 3)
         dataset_type = "_" + "inv_pcc_" + test
+
+    if plot and matplotlib.get_backend().lower() == "agg":
+        print("Trajectory preview is unavailable: Matplotlib is using the non-interactive Agg backend.")
+        plot = False
 
     if plot:
         plt.figure(figsize=(12,5)).tight_layout(pad=3)
