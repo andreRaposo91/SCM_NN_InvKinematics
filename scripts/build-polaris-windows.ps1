@@ -27,7 +27,7 @@ $venvPython = Join-Path $buildVenv 'Scripts\python.exe'
     'tensorflow==2.13.1' 'keras==2.13.1' 'h5py>=3.8' `
     'numpy>=1.24,<1.25' 'pandas>=2.0' 'scipy>=1.10' `
     'matplotlib>=3.7' 'seaborn>=0.13' 'pyserial==3.5' `
-    'pyinstaller>=6.5,<7'
+    'pyinstaller>=6.5,<7', "ndicapi", "scikit-surgerynditracker"
 & $venvPython -m PyInstaller `
     --noconfirm --clean `
     --distpath dist/windows `

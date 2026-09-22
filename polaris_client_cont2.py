@@ -40,12 +40,12 @@ import matplotlib.pyplot as plt
 
 MODEL_CHOICES = {
     "1": ("pcc", "PCC analytical baseline"),
-    "2": ("fnn3", "FNN: Cartesian position"),
-    "3": ("fnn6", "FNN: position and direction"),
+    "2": ("fnn3", "FNN3: Cartesian position"),
+    "3": ("fnn6", "FNN6: position and direction"),
     "4": ("rnn", "RNN: Cartesian position"),
-    "5": ("fnn3_pcc", "FNN: PCC estimate"),
-    "6": ("fnn6_pcc", "FNN: PCC estimate and direction"),
-    "7": ("rnn_pcc", "RNN: PCC estimate"),
+    "5": ("fnn3_pcc", "FNN3-CC: PCC estimate"),
+    "6": ("fnn6_pcc", "FNN6-CC: PCC estimate and direction"),
+    "7": ("rnn_pcc", "RNN-CC: PCC estimate"),
 }
 TRAJECTORY_CHOICES = {"1": "square", "2": "circle", "3": "coil"}
 
