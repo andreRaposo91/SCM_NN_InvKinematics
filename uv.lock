@@ -619,9 +619,12 @@ dependencies = [
     { name = "matplotlib", version = "3.7.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "matplotlib", version = "3.10.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "ndicapi" },
     { name = "pandas", version = "2.0.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "plotly" },
+    { name = "pyserial" },
+    { name = "scikit-surgerynditracker" },
     { name = "scipy", version = "1.10.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -635,8 +638,11 @@ requires-dist = [
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "keras", specifier = "==2.13.1" },
     { name = "matplotlib", specifier = ">=3.7.5" },
+    { name = "ndicapi", specifier = ">=3.7.6" },
     { name = "pandas", specifier = ">=2.0.3" },
     { name = "plotly", specifier = ">=6.9.0" },
+    { name = "pyserial", specifier = ">=3.5" },
+    { name = "scikit-surgerynditracker", specifier = ">=1.0.1" },
     { name = "scipy", specifier = ">=1.10.1" },
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "serial", specifier = ">=0.0.97" },
@@ -3106,6 +3112,41 @@ wheels = [
 ]
 
 [[package]]
+name = "ndicapi"
+version = "3.7.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/83/25587bb882576259f26d44fdac3d8971fbcea015dad518e028f50246b829/ndicapi-3.7.6.tar.gz", hash = "sha256:a07859501280c40ccd3adb5b5a4ee984edab4b69fa15eb5f00595bbd20056efe", size = 69828, upload-time = "2026-09-10T12:53:08.935Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/ae/af43269f429ef8a555e0c87707acfa69e86f9285467434c71bed5387dc82/ndicapi-3.7.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:2bbae7913eddea96fc1b24b6d95c86f7e2475bd286fa6f4a46dce60aee515b6e", size = 63299, upload-time = "2026-09-10T12:51:58.367Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/4b/ae2fa6507064412c49ff3fe79e739a3895bbce2ec547457e1cb5e1ce8353/ndicapi-3.7.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:51aa291abc80656870d5c1f5a07a11e4ebbdc061817ca8e99c608a6614667946", size = 62876, upload-time = "2026-09-10T12:51:59.495Z" },
+    { url = "https://files.pythonhosted.org/packages/03/86/691090c319b23847b77519c818cb4aceb892212a3b0f992c0b5d6cefc27a/ndicapi-3.7.6-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:3b2088a777c4440e53ab9265943ac3abccde1e5cf704da9672ff4d12dbe58fb5", size = 215686, upload-time = "2026-09-10T12:52:00.755Z" },
+    { url = "https://files.pythonhosted.org/packages/55/5e/2eb92dcc4439912dcf531b62e28f3ac201e86256d621365fe7c7ff10b824/ndicapi-3.7.6-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2272415dc73e932d30296475d604b10febf0613025fcc7802c57d38433714110", size = 224397, upload-time = "2026-09-10T12:52:01.931Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/69/a3c77a0be7cf7c5672c8492c9cded1e476bb5167bc52d09dc4db0102de70/ndicapi-3.7.6-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:95f9ea777cf2b9306b4913d1b072e3660cc83ae566c47c343f5bffeed4b184b1", size = 1186786, upload-time = "2026-09-10T12:52:03.15Z" },
+    { url = "https://files.pythonhosted.org/packages/36/92/ab411241b3a3fb155837079c624ba171fd947445a46d32f9d54bfa709a5e/ndicapi-3.7.6-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:4eac394f5982621a84b3191c139def2d479f659ebceede4d862c4ecfb89b5e00", size = 1247724, upload-time = "2026-09-10T12:52:04.348Z" },
+    { url = "https://files.pythonhosted.org/packages/78/fd/095a0e78d4e6094f575713aaab3e7f9e2ddda0509aa2be39c96c0c32af58/ndicapi-3.7.6-cp310-cp310-win32.whl", hash = "sha256:d5013da552b915189e89aef940b901be6ed68b6e6386f9a45fbd7ab564d097f1", size = 30912, upload-time = "2026-09-10T12:52:05.406Z" },
+    { url = "https://files.pythonhosted.org/packages/de/e6/8bf68c4d9514dca2f275d071f89229239ed757c170190985c711bdd102c2/ndicapi-3.7.6-cp310-cp310-win_amd64.whl", hash = "sha256:3ca7a5b91199d4ef3eb12dad20d58c35c121bec80edbda8a3e453fe2eca95622", size = 40964, upload-time = "2026-09-10T12:52:06.198Z" },
+    { url = "https://files.pythonhosted.org/packages/47/2c/3f5181676ee4d25390cf9c2df118cbffe4a26f7eaf31869a9ecffc3d0ffb/ndicapi-3.7.6-cp310-cp310-win_arm64.whl", hash = "sha256:1e63479bb862469386e1965578713d3bac6e878f9e4fa50a797b26fea059a8d2", size = 31754, upload-time = "2026-09-10T12:52:07.232Z" },
+    { url = "https://files.pythonhosted.org/packages/af/39/1253ccdbfe764e5d31e491718dd7f64b762169f6c354a474f6036ddea6a7/ndicapi-3.7.6-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:deb6bb7398d3d8826722205f99419f61d2b2d802b4f3c80ec5f3fe31b229bacc", size = 63297, upload-time = "2026-09-10T12:52:08.237Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/4a/7a5a0bdd1f1106c97b3865c2ad08bec71275a4c78c7621be7207a9b70630/ndicapi-3.7.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:01655d685f1359a52e2c16aa5223edad28e7f8feb06e89cc428638ba06d34508", size = 62878, upload-time = "2026-09-10T12:52:09.208Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/69/8f70627d952696d570d4b7b1d98b106080219752bb8a5a04b60875592e5d/ndicapi-3.7.6-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:cb341ad487983dba71b8100dd665a2929419904aa1ba063beda69b052533a56f", size = 216985, upload-time = "2026-09-10T12:52:10.322Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/6e/a00214f8cf0d1582e4fe1a76dbcc6adff47b7a47ca3fc2085d8d1eacee8c/ndicapi-3.7.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f4ed340f4ba8f1dc283a5683c8474345c9164f47c5a6ee66ab41716bc4bd84f4", size = 225582, upload-time = "2026-09-10T12:52:11.494Z" },
+    { url = "https://files.pythonhosted.org/packages/75/76/f5134db06add907454002f0247b325a9614dc351ee599390089f76cd2787/ndicapi-3.7.6-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:4fcf106f7617707eaf3e0d64a20715fa2bd4b5c062682d12ef9676a6dd928ece", size = 1188032, upload-time = "2026-09-10T12:52:12.779Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/43/585ca923db6accf33a979f7b8e6b30b40b109be56bda1d5859b01c9a7b83/ndicapi-3.7.6-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:f176d4b72896e7eaa0bc7bb0a2c3266279ff6fe9dd05f1060d7efe08a24634d8", size = 1248904, upload-time = "2026-09-10T12:52:14.17Z" },
+    { url = "https://files.pythonhosted.org/packages/15/ef/971fd6056dd92731a17ec464c35083f89a8bf422887d8aa54aa26dc1cca8/ndicapi-3.7.6-cp311-cp311-win32.whl", hash = "sha256:9d4726989c37f30a0cb878b772325e8c85fea563db0da0aa04848257fde16746", size = 30975, upload-time = "2026-09-10T12:52:15.251Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/01/c3959462d4174d3dce539f71da239d9e95ffddb7a935b175df38da7f2ff8/ndicapi-3.7.6-cp311-cp311-win_amd64.whl", hash = "sha256:f817fc89d265c584a26840b18faaf2ef88a57e1b8a8e8c9c615c00c143c65dec", size = 40964, upload-time = "2026-09-10T12:52:16.087Z" },
+    { url = "https://files.pythonhosted.org/packages/62/ab/9c1dcd1156be3bbb3348e6895cc690223615a7186d869f755add700e5fa0/ndicapi-3.7.6-cp311-cp311-win_arm64.whl", hash = "sha256:a3a312210c3a881f5c45c5c26a6e5c8b3a5405ac3e2264a4896e7bd164977a73", size = 31754, upload-time = "2026-09-10T12:52:17.029Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/9d/8ddbec7638dd6aadcde43bb3527fb818182b18a488f363f858b3818cb4af/ndicapi-3.7.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:e7a7d90f73206d606a15d18aab1e26fc5d27b12a1013c9014c90b868bee7a821", size = 63294, upload-time = "2026-09-10T12:52:57.73Z" },
+    { url = "https://files.pythonhosted.org/packages/95/65/3b20a755ee40ef064d340f184043c6a1511a61be6800891db3bbf671eecf/ndicapi-3.7.6-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:09be53e92d0200be1c7a7eb00c506c8b806c6d978b7d83b58260120de44a7fdd", size = 62871, upload-time = "2026-09-10T12:52:58.858Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/5f/623f3699215fbfa19c68b18551d3d48e307dcf62996c739314c96fbd4a2d/ndicapi-3.7.6-cp39-cp39-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:19e0e3d2f0e373ddc18c973216d74d61ff6c72337b06db1c03aac2cccae791f9", size = 215515, upload-time = "2026-09-10T12:53:00.102Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/ff/60cff379fd6315b5d35a5dddc34dc7d2f7e40054d5bc6f786e2234e319a2/ndicapi-3.7.6-cp39-cp39-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:86d352a8461f07eadeedf516a5fbc1b487912fd9eeb4f6217656c50564418262", size = 224187, upload-time = "2026-09-10T12:53:01.619Z" },
+    { url = "https://files.pythonhosted.org/packages/45/01/bab9428628101f909ef52517fe6d019ee16ef6d0809037322c9a87d495ac/ndicapi-3.7.6-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:8cf7ec33873e8c54e7b94861a6ebfef9d494711f0e9b0d842ea36a1d09cb2783", size = 1186565, upload-time = "2026-09-10T12:53:02.931Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/68/a54a268ede7242130ca0d97ec9a5e34ed9d83a242cf62b1a9ebeb44a8970/ndicapi-3.7.6-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:d251da04e538633c10609879c945272005f5be03189caf99185cfda5ce9c7b0d", size = 1247502, upload-time = "2026-09-10T12:53:04.697Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/78/3567e7767ff9867773fec65a77776f0129f8306fc5bc1247aeadf8279a6e/ndicapi-3.7.6-cp39-cp39-win32.whl", hash = "sha256:4585b0b7f10b8eb76346b3f853b051965e5d4f3d5eea5cd48954cf18dceea257", size = 30906, upload-time = "2026-09-10T12:53:05.925Z" },
+    { url = "https://files.pythonhosted.org/packages/56/f1/e62adfe86f3217746460d60dd4513f4b9eee765ce01dfbeae674e6d14c3b/ndicapi-3.7.6-cp39-cp39-win_amd64.whl", hash = "sha256:9985c570fc68f025cea06e2d1a22ccb5c940559679f77c7cf983d5690c497d63", size = 40963, upload-time = "2026-09-10T12:53:07.016Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/bf/6299d8ee6d3a162a3f149df4b9016be07f67c7c985add7729dfbfa049cce/ndicapi-3.7.6-cp39-cp39-win_arm64.whl", hash = "sha256:8badc331f7e286045dc83adfb0f9c692121bc192d9f1a7c755c3c7c499cadb95", size = 31747, upload-time = "2026-09-10T12:53:07.991Z" },
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3807,6 +3848,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyserial"
+version = "3.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1e/7d/ae3f0a63f41e4d2f6cb66a5b57197850f919f59e558159a4dd3a818f5082/pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb", size = 159125, upload-time = "2020-11-23T03:59:15.045Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/bc/587a445451b253b285629263eb51c2d8e9bcea4fc97826266d186f96f558/pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0", size = 90585, upload-time = "2020-11-23T03:59:13.41Z" },
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
@@ -4477,6 +4527,28 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f6/40/02355f0e134f783a8f9814c4680a1bd311d37671577a5964ea838573ff37/rpds_py-2026.6.3-pp311-pypy311_pp73-musllinux_1_2_i686.whl", hash = "sha256:ca6546b66be9dc4738b1b043d5ebd5488c66c578c5ff0fd0e8065313fe3afb76", size = 623138, upload-time = "2026-06-30T07:17:49.355Z" },
     { url = "https://files.pythonhosted.org/packages/10/85/48f0abdcef5cce4e034c7a5b0ceeceba0b01bf0d942824f4bb720afe2dec/rpds_py-2026.6.3-pp311-pypy311_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:8e65860d238379ed982fd9ba690579b5e95af2f4840f99c772816dbe573cb826", size = 586486, upload-time = "2026-06-30T07:17:51.141Z" },
 ]
+
+[[package]]
+name = "scikit-surgerycore"
+version = "0.8.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/14/06/976fc9b67a8f50681f3855d4160900ec2e56760e9a1d179129a2a8f574b2/scikit_surgerycore-0.8.3.tar.gz", hash = "sha256:5cc697a920f2eacd6e5b15d7bf6b4acb3aee41dba28ff175f72e8e7643fd4f5a", size = 44300, upload-time = "2025-10-23T18:01:20.171Z" }
+
+[[package]]
+name = "scikit-surgerynditracker"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ndicapi" },
+    { name = "numpy" },
+    { name = "pyserial" },
+    { name = "scikit-surgerycore" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/72/ca/5080a5506001bd69d512b3719b128aea420fb9daff7485ef3fd09147138e/scikit-surgerynditracker-1.0.1.tar.gz", hash = "sha256:98b89d6cc10f52fc5991f4c021b7b24529e1816e486f9878d8fd69d473c2c613", size = 27536, upload-time = "2024-02-22T17:12:22.891Z" }
 
 [[package]]
 name = "scipy"

@@ -262,7 +262,7 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
     SETTINGS = {
         "tracker type": "polaris",
-        "serial_port": serial_port,
+        "serial port": serial_port,
         "romfiles" : [str(bundled_path("polaris/8700449.rom"))],
     }
 

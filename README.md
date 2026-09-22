@@ -41,6 +41,7 @@ tracker, ROM file, and the relevant tracker/serial Python packages.
 The file names encode the acquisition or test type and timestamp; commented examples in
 `read_datafile.py` and `polaris_client.py` document the available experimental
 configurations.
+
 # Packaging the Polaris client
 
 Build the application on the operating system where it will run. The recipes

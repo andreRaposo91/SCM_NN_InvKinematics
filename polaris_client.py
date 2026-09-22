@@ -39,7 +39,8 @@ def parse_strays(stream, str_flag=True):
 if __name__ == "__main__":
     SETTINGS = {
         "tracker type": "polaris",
-        "serial_port": "COM3", 
+        # "serial port": "COM3",
+        "serial port": "/dev/ttyUSB1",
         "romfiles" : ["./polaris/8700449.rom"],
         }
     # sys.exit(0)
