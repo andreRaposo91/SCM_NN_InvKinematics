@@ -50,6 +50,28 @@ MODEL_CHOICES = {
 TRAJECTORY_CHOICES = {"1": "square", "2": "circle", "3": "coil"}
 
 
+def normalise_tracker_serial_port(port: str) -> str:
+    """Return a Windows-safe serial-device name for the NDI native library.
+
+    Win32 accepts ``COM1`` through ``COM9`` as legacy device names.  Ports
+    numbered 10 or above must be passed to some native serial APIs using the
+    extended ``\\\\.\\COM10`` form.  scikit-surgerynditracker applies this
+    conversion while auto-discovering ports, but not when a port is supplied
+    explicitly in its configuration dictionary.
+    """
+    port = port.strip()
+    if sys.platform != "win32":
+        return port
+
+    if port.upper().startswith("\\\\.\\"):
+        return port
+
+    if port.upper().startswith("COM") and port[3:].isdigit() and int(port[3:]) >= 10:
+        return "\\\\.\\" + port
+
+    return port
+
+
 def prompt_value(label, default, convert=str):
     """Read one value, retaining the supplied default when input is blank."""
     while True:
@@ -262,7 +284,7 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
     SETTINGS = {
         "tracker type": "polaris",
-        "serial port": serial_port,
+        "serial port": normalise_tracker_serial_port(serial_port),
         "romfiles" : [str(bundled_path("polaris/8700449.rom"))],
     }
 
