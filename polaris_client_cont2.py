@@ -84,6 +84,12 @@ def prompt_value(label, default, convert=str):
             print("Invalid value; please try again.")
 
 
+def prompt_optional_value(label):
+    """Read a value, returning None when the user leaves the prompt blank."""
+    response = input(f"{label} [blank = auto-detect]: ").strip()
+    return response or None
+
+
 def prompt_vector(label, default):
     default_text = ", ".join(str(value) for value in default)
     while True:
@@ -191,7 +197,7 @@ def interactive_configuration():
     send = prompt_yes_no("Send this trajectory to the robot", args.send)
     robot_port = args.robot_port or prompt_value("Robot serial port", "COM5") if send else None
     record_tracking = prompt_yes_no("Record Polaris tracking data", False) if send else False
-    tracker_port = prompt_value("Polaris serial port", "COM6") if record_tracking else None
+    tracker_port = prompt_optional_value("Polaris serial port") if record_tracking else None
     return model, trajectory, points, description, pause_time, folder, plot, send, robot_port, record_tracking, tracker_port
 
 def parse_strays(stream, str_flag=True):
@@ -270,7 +276,7 @@ def find_traj(run_folder, points_gen_str, model):
         print("find_traj: invalid 'run_folder' format")
         return None
 
-async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6"):
+async def polaris_track(file, file_lock, tracker_connecting, serial_port=None):
     global in_traj, count
 
     try:
@@ -284,9 +290,10 @@ async def polaris_track(file, file_lock, tracker_connecting, serial_port="COM6")
 
     SETTINGS = {
         "tracker type": "polaris",
-        "serial port": normalise_tracker_serial_port(serial_port),
         "romfiles" : [str(bundled_path("polaris/8700449.rom"))],
     }
+    if serial_port is not None:
+        SETTINGS["serial port"] = normalise_tracker_serial_port(serial_port)
 
     tracker = NDITracker(SETTINGS)
     device = tracker._device
